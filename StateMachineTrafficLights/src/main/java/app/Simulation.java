@@ -24,7 +24,7 @@ public class Simulation {
             do {
                 iteration += 1;
                 System.out.println("<<Step " + iteration + ">>");
-            } while (this.step() && iteration < 30);
+            } while (this.step());
             System.out.println("No actions, aborting.");
         } catch (Exception exception) {
             exception.printStackTrace();
