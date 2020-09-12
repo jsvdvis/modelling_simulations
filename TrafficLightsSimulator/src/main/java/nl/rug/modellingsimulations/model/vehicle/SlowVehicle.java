@@ -58,6 +58,11 @@ public class SlowVehicle implements Vehicle {
     }
 
     @Override
+    public void fullBrake() {
+        this.currentSpeed = 0;
+    }
+
+    @Override
     public NavigableNode getNextNavigableNode() {
         return this.getRoutingStrategy().pickNextNode(this);
     }

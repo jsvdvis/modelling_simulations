@@ -18,5 +18,6 @@ public interface Vehicle {
     void makeMove();
 
     void tryAccelerate();
+    void fullBrake();
 
 }

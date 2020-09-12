@@ -26,11 +26,11 @@ public class Simulator {
      * 2. Update the state (lights) of each TrafficLightJunction
      * 3. Retrieve all vehicles
      * 4. During each step, each vehicle has N possible actions (determined by speed).
-     * 5a. Get list of movable vehicles
-     * 5b. Keep track of moved and unmoved vehicles during this iteration step
-     * 5c. Move the vehicle and subtract available moves
-     * 6. Accelerate all vehicles that could drive,
-     *      OR that were able to accelerate at the start of the iteration
+     * 5a. Vehicles with 0 moves left, will accelerate if able to keep moving
+     * 5b. All vehicles that have moves remaining but CANNOT make that move, have to break!
+     * 5c. Get a list of movable vehicles
+     * 5d. Move the vehicle, and reduce the maximum amount of movements remaining
+     * 6. Accelerate all vehicles that did not brake and can still make a move
      */
     private Simulation step(Simulation simulation) {
         // TODO: deep copy of the simulation, so state transitions from one to the other
@@ -52,24 +52,30 @@ public class Simulator {
         Map<Vehicle, Integer> vehicleMovesAvailable = vehicles.parallelStream()
                 .collect(Collectors.toMap(x -> x, Vehicle::getCurrentSpeed));
 
-        Set<Vehicle> unmovedCanAccelerate = vehicles.parallelStream()
-                .filter(Vehicle::canMakeMove).collect(Collectors.toSet());
-        Set<Vehicle> movedVehicles = new HashSet<>();
+        Set<Vehicle> canMoveAfterIteration = new HashSet<>();
         while(vehicleMovesAvailable.size() > 0) {
-            // STEP 5a: Get a list of movable vehicles, since we want to perform all movements at the same time
+
+            // STEP 5a: Vehicles with 0 moves left, will accelerate if able to keep moving
+            vehicleMovesAvailable.entrySet()
+                    .parallelStream()
+                    .filter(x -> x.getValue() == 0 && x.getKey().canMakeMove())
+                    .forEach(vehicle -> {
+                        canMoveAfterIteration.add(vehicle.getKey());
+                    });
+
+            // STEP 5b: All vehicles that have moves remaining but CANNOT make that move, have to break!
+            vehicleMovesAvailable.entrySet()
+                    .parallelStream()
+                    .filter(x -> x.getValue() > 0 && !x.getKey().canMakeMove())
+                    .forEach(x -> x.getKey().fullBrake());
+
+            // STEP 5c: Get a list of movable vehicles, since we want to perform all movements at the same time
             //   in order to avoid race conditions (only move available after the one in front moved)
             vehicleMovesAvailable = vehicleMovesAvailable.entrySet().parallelStream()
-                    .filter(vehicleMoves -> vehicleMoves.getValue() > 0)
-                    .filter(vehicleMoves -> vehicleMoves.getKey().canMakeMove())
+                    .filter(vehicleMoves -> vehicleMoves.getValue() > 0 && vehicleMoves.getKey().canMakeMove())
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-            // STEP 5b: Remember the vehicles that we moved, so that we can perhaps increase the speed afterwards!
-            vehicleMovesAvailable.keySet().forEach(vehicle -> {
-                    unmovedCanAccelerate.remove(vehicle);
-                    movedVehicles.add(vehicle);
-            });
-
-            // STEP 5c: Move the vehicle, and reduce the maximum amount of movements remaining!
+            // STEP 5d: Move the vehicle, and reduce the maximum amount of movements remaining!
             vehicleMovesAvailable = vehicleMovesAvailable.entrySet().parallelStream()
                     .map(vehicleMoves -> {
                         vehicleMoves.getKey().makeMove();
@@ -78,10 +84,8 @@ public class Simulator {
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         }
 
-        // Step 6: All vehicles that could NOT move but COULD accelerate,
-        //  OR all vehicles that were driving, will now try to accelerate!
-        unmovedCanAccelerate.forEach(Vehicle::tryAccelerate);
-        movedVehicles.forEach(Vehicle::tryAccelerate);
+        // Step 6: All vehicles that end up with an empty spot before them will accelerate in the next phase
+        canMoveAfterIteration.forEach(Vehicle::tryAccelerate);
 
         return simulation;
     }

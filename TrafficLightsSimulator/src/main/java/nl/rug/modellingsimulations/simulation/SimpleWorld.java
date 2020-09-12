@@ -14,6 +14,7 @@ public class SimpleWorld implements Simulation {
         Graph graph = new SingleGraph("SimpleWorld");
         graph.addNode("aa");
         graph.display();
+        System.exit(0);
     }
 
     @Override
