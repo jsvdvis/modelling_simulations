@@ -4,8 +4,6 @@ import nl.rug.modellingsimulations.model.TrafficLightJunction;
 import nl.rug.modellingsimulations.model.vehicle.Vehicle;
 import nl.rug.modellingsimulations.simulation.Simulation;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.stream.Collectors;
 

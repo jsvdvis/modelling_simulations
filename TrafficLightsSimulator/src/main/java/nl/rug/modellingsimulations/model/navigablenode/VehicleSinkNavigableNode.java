@@ -7,7 +7,7 @@ import java.util.List;
 
 public class VehicleSinkNavigableNode extends VehicleBuffer {
 
-    protected VehicleSinkNavigableNode() {
+    public VehicleSinkNavigableNode() {
         super(1);
     }
 
