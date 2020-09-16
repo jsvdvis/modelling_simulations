@@ -1,7 +1,7 @@
 package nl.rug.modellingsimulations.model.navigablenode;
 
+import nl.rug.modellingsimulations.model.JunctionNode;
 import nl.rug.modellingsimulations.model.VehicleBuffer;
-import nl.rug.modellingsimulations.model.vehicle.Vehicle;
 
 import java.util.List;
 

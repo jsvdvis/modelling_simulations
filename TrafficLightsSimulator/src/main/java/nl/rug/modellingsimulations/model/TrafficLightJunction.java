@@ -2,38 +2,40 @@ package nl.rug.modellingsimulations.model;
 
 import nl.rug.modellingsimulations.model.navigablenode.JunctionExitNavigableNode;
 import nl.rug.modellingsimulations.model.navigablenode.JunctionLaneNavigableNode;
+import nl.rug.modellingsimulations.model.navigablenode.RoadNavigableNode;
 import nl.rug.modellingsimulations.model.trafficlightstrategy.TrafficLightStrategy;
+import nl.rug.modellingsimulations.utilities.Point;
 
 import java.util.*;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  *
  */
-public class TrafficLightJunction {
+public abstract class TrafficLightJunction {
 
-    private Map<JunctionLaneNavigableNode, JunctionExitNavigableNode> lanes;
-    private Map<JunctionLaneNavigableNode, Set<JunctionLaneNavigableNode>> exemptedLanes = new HashMap<>();
-    private TrafficLightStrategy trafficLightStrategy;
+    private final Set<JunctionLaneNavigableNode> lanes;
+    private final Map<JunctionLaneNavigableNode, Set<JunctionLaneNavigableNode>> exemptedLanes = new HashMap<>();
+    private final TrafficLightStrategy trafficLightStrategy;
+    private final Point position;
 
-    public TrafficLightJunction(TrafficLightStrategy trafficLightStrategy) {
-        this.lanes = new HashMap<>();
+    public TrafficLightJunction(TrafficLightStrategy trafficLightStrategy, Point position) {
+        this.lanes = new HashSet<>();
         this.trafficLightStrategy = trafficLightStrategy;
-    }
-
-    public void setTrafficLightStrategy(TrafficLightStrategy trafficLightStrategy) {
-        this.trafficLightStrategy = trafficLightStrategy;
+        this.position = position;
     }
 
     public TrafficLightStrategy getTrafficLightStrategy() {
         return this.trafficLightStrategy;
     }
 
-    public void addLane(JunctionLaneNavigableNode lane, JunctionExitNavigableNode exit) {
-        this.lanes.put(lane, exit);
+    public void addLane(JunctionLaneNavigableNode lane) {
+        this.lanes.add(lane);
     }
 
-    public List<JunctionLaneNavigableNode> getJunctionLanes() {
-        return new ArrayList<>(lanes.keySet());
+    public Set<JunctionLaneNavigableNode> getJunctionLanes() {
+        return lanes;
     }
 
     public void addExemptedLane(JunctionLaneNavigableNode master, JunctionLaneNavigableNode slave) {
@@ -45,5 +47,28 @@ public class TrafficLightJunction {
             throw new IllegalStateException("The specified navigable lane already has this lane on the exempted list.");
         }
         exemptedLanesForMaster.add(slave);
+    }
+
+    public Point getPosition() {
+        return this.position;
+    }
+
+    public Collection<List<JunctionLaneNavigableNode>> getJunctionLaneFromSameRoad() {
+        return lanes.parallelStream()
+                .collect(Collectors.groupingByConcurrent(JunctionLaneNavigableNode::getSourceRoad)).values();
+    }
+
+    public List<RoadNavigableNode> getSourceRoads() {
+        return lanes.parallelStream()
+                .map(JunctionLaneNavigableNode::getSourceRoad)
+                .collect(Collectors.toList());
+    }
+
+    public List<JunctionExitNavigableNode> getJunctionExits() {
+        return this.lanes.parallelStream()
+                .map(junctionLane -> (List<JunctionExitNavigableNode>)(List<?>) junctionLane.getNextNodes())
+                .flatMap(List::stream)
+                .distinct()
+                .collect(Collectors.toList());
     }
 }

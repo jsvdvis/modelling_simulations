@@ -17,6 +17,14 @@ public class JunctionExitNavigableNode extends VehicleBuffer {
     }
 
     @Override
+    public void addNextNode(NavigableNode next) {
+        if(!(next instanceof RoadNavigableNode))
+            throw new IllegalStateException("Junction Exit may only point to a Road.");
+
+        this.roadNavigableNode = (RoadNavigableNode) next;
+    }
+
+    @Override
     public List<NavigableNode> getNextNodes() {
         return List.of(roadNavigableNode);
     }

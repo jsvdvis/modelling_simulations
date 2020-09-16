@@ -9,6 +9,7 @@ import java.util.List;
  */
 public interface NavigableNode {
 
+    public void addNextNode(NavigableNode next);
     List<NavigableNode> getNextNodes();
     boolean canMovePosition(Vehicle vehicle);
     void movePosition(Vehicle vehicle);

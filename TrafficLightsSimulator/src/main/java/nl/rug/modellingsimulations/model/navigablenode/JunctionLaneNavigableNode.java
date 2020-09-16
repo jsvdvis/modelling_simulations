@@ -10,11 +10,20 @@ import java.util.List;
  */
 public class JunctionLaneNavigableNode extends VehicleBuffer {
 
+    private RoadNavigableNode sourceRoad;
     private JunctionExitNavigableNode junctionExitNode;
     private boolean isGreenLight = false;
 
     public JunctionLaneNavigableNode(int size) {
         super(size);
+    }
+
+    @Override
+    public void addNextNode(NavigableNode next) {
+        if(!(next instanceof JunctionExitNavigableNode))
+            throw new IllegalStateException("Junction Exit may only point to a Junction Exit.");
+
+        this.junctionExitNode = (JunctionExitNavigableNode) next;
     }
 
     @Override
@@ -30,4 +39,11 @@ public class JunctionLaneNavigableNode extends VehicleBuffer {
         this.isGreenLight = isGreenLight;
     }
 
+    public RoadNavigableNode getSourceRoad() {
+        return sourceRoad;
+    }
+
+    public void setSourceRoad(RoadNavigableNode sourceRoad) {
+        this.sourceRoad = sourceRoad;
+    }
 }

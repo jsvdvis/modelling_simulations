@@ -12,6 +12,11 @@ public class VehicleSinkNavigableNode extends VehicleBuffer {
     }
 
     @Override
+    public void addNextNode(NavigableNode next) {
+        throw new IllegalStateException("Can not add a next node to a sink.");
+    }
+
+    @Override
     public List<NavigableNode> getNextNodes() {
         throw new IllegalStateException("Tried to get next node of a SinkNode.");
     }

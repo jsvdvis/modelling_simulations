@@ -1,34 +1,47 @@
 package nl.rug.modellingsimulations.simulation;
 
+import nl.rug.modellingsimulations.config.DefaultSimulationConfig;
+import nl.rug.modellingsimulations.config.SimulationConfig;
+import nl.rug.modellingsimulations.model.SimpleTrafficLightJunction;
 import nl.rug.modellingsimulations.model.TrafficLightJunction;
 import nl.rug.modellingsimulations.model.navigablenode.*;
 import nl.rug.modellingsimulations.model.trafficlightstrategy.RoundRobinTimerTrafficLightStrategy;
+import nl.rug.modellingsimulations.model.trafficlightstrategy.TrafficLightStrategy;
 import nl.rug.modellingsimulations.model.vehicle.Vehicle;
-import org.graphstream.graph.Graph;
-import org.graphstream.graph.implementations.SingleGraph;
+import nl.rug.modellingsimulations.utilities.Point;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class SimpleWorld implements Simulation {
 
     private ArrayList<NavigableNode> nodes = new ArrayList<>();
-    private ArrayList<TrafficLightJunction> junctions = new ArrayList<>();
+    private List<TrafficLightJunction> junctions = new ArrayList<>();
     private ArrayList<Vehicle> vehicles = new ArrayList<>();
-    private ArrayList<VehicleSourceNavigableNode> sources = new ArrayList<>();
+    private SimulationConfig simulationConfig = DefaultSimulationConfig.getInstance();
 
     public SimpleWorld() {
         initializeWorld();
     }
 
     private void initializeWorld() {
-        this.addNavigableNode(new VehicleSourceNavigableNode());
-        this.addNavigableNode(new VehicleSinkNavigableNode());
+        SimulationBuilder builder = new SimulationBuilder(this);
+        VehicleSourceNavigableNode vehicleSourceNavigableNode = new VehicleSourceNavigableNode();
+        VehicleSinkNavigableNode vehicleSinkNavigableNode1 = new VehicleSinkNavigableNode();
+        VehicleSinkNavigableNode vehicleSinkNavigableNode2 = new VehicleSinkNavigableNode();
 
-        TrafficLightJunction junction = new TrafficLightJunction(RoundRobinTimerTrafficLightStrategy.getInstance());
-        JunctionLaneNavigableNode lane1 = new JunctionLaneNavigableNode(3);
-        JunctionExitNavigableNode exit1 = new JunctionExitNavigableNode();
-        junction.addLane(lane1, exit1);
+        TrafficLightStrategy trafficLightStrategy = RoundRobinTimerTrafficLightStrategy.getInstance();
+
+        TrafficLightJunction junction1 = new SimpleTrafficLightJunction(trafficLightStrategy, new Point(0, 0));
+        TrafficLightJunction junction2 = new SimpleTrafficLightJunction(trafficLightStrategy, new Point(0, 4));
+        TrafficLightJunction junction3 = new SimpleTrafficLightJunction(trafficLightStrategy, new Point(5, 4));
+
+        builder.connectTwoWayJunction(junction1, junction2);
+        builder.connect(junction2, junction3);
+        builder.connect(junction3, junction1);
+
+        this.junctions = builder.getJunctions();
     }
 
     @Override
@@ -43,11 +56,18 @@ public class SimpleWorld implements Simulation {
 
     @Override
     public List<VehicleSourceNavigableNode> getSources() {
-        return sources;
+        return nodes.parallelStream()
+                .filter(x -> x instanceof VehicleSourceNavigableNode)
+                .map(x -> (VehicleSourceNavigableNode) x)
+                .collect(Collectors.toList());
     }
 
     public void addNavigableNode(NavigableNode node) {
         this.nodes.add(node);
+    }
+
+    public SimulationConfig getConfig() {
+        return this.simulationConfig;
     }
 
 }
