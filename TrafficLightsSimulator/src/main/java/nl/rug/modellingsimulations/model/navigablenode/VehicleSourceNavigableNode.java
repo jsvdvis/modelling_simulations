@@ -1,6 +1,6 @@
 package nl.rug.modellingsimulations.model.navigablenode;
 
-import nl.rug.modellingsimulations.model.JunctionNode;
+
 import nl.rug.modellingsimulations.model.VehicleBuffer;
 
 import java.util.List;
@@ -18,7 +18,7 @@ public class VehicleSourceNavigableNode extends VehicleBuffer {
         return List.of(navigableNode);
     }
 
-    public void setNavigableNode(NavigableNode navigableNode) {
+    public void addNextNode(NavigableNode navigableNode) {
         this.navigableNode = navigableNode;
     }
 

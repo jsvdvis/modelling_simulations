@@ -16,9 +16,9 @@ public abstract class VehicleBuffer implements NavigableNode {
         this.size = size;
         this.vehicleSlots = HashBiMap.create(this.size);
 
-        // Initialize buffer with nulls
-        for(int i = 0; i < this.size; i++)
-            this.vehicleSlots.put(i, null);
+//        // Initialize buffer with nulls
+//        for(int i = 0; i < this.size; i++)
+//            this.vehicleSlots.put(i, null);
     }
 
     /**

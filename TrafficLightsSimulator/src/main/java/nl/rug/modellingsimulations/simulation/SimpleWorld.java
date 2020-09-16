@@ -16,8 +16,8 @@ import java.util.stream.Collectors;
 
 public class SimpleWorld implements Simulation {
 
-    private ArrayList<NavigableNode> nodes = new ArrayList<>();
-    private List<TrafficLightJunction> junctions = new ArrayList<>();
+    private List<NavigableNode> nodes;
+    private List<TrafficLightJunction> junctions;
     private ArrayList<Vehicle> vehicles = new ArrayList<>();
     private SimulationConfig simulationConfig = DefaultSimulationConfig.getInstance();
 
@@ -40,8 +40,12 @@ public class SimpleWorld implements Simulation {
         builder.connectTwoWayJunction(junction1, junction2);
         builder.connect(junction2, junction3);
         builder.connect(junction3, junction1);
+        builder.connect(vehicleSourceNavigableNode, junction2);
+        builder.connect(junction1, vehicleSinkNavigableNode1);
+        builder.connect(junction3, vehicleSinkNavigableNode2);
 
         this.junctions = builder.getJunctions();
+        this.nodes = builder.getNavigableNodes();
     }
 
     @Override
@@ -60,10 +64,6 @@ public class SimpleWorld implements Simulation {
                 .filter(x -> x instanceof VehicleSourceNavigableNode)
                 .map(x -> (VehicleSourceNavigableNode) x)
                 .collect(Collectors.toList());
-    }
-
-    public void addNavigableNode(NavigableNode node) {
-        this.nodes.add(node);
     }
 
     public SimulationConfig getConfig() {

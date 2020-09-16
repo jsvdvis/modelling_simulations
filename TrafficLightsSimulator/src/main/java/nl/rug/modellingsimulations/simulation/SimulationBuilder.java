@@ -34,17 +34,15 @@ public class SimulationBuilder {
     }
 
     public void connect(TrafficLightJunction from, TrafficLightJunction to) {
-        if (!junctions.contains(from)) {
-            junctions.add(from);
-        }
-        if (!junctions.contains(to)) {
-            junctions.add(to);
-        }
+        junctions.add(from);
+        junctions.add(to);
 
         RoadNavigableNode newRoad = new RoadNavigableNode(
             (int)Math.ceil(from.getPosition().getDistance(to.getPosition()))
         );
+        nodes.add(newRoad);
         JunctionExitNavigableNode laneExit = new JunctionExitNavigableNode();
+        nodes.add(laneExit);
         laneExit.addNextNode(newRoad);
 
         // Create junction lanes for all roads ending at from.
@@ -55,6 +53,7 @@ public class SimulationBuilder {
                     JunctionLaneNavigableNode laneStart = new JunctionLaneNavigableNode(
                             simulation.getConfig().getRandomLaneSize()
                     );
+                    nodes.add(laneStart);
                     fromRoad.addNextNode(laneStart);
                     laneStart.addNextNode(laneExit);
                 });
@@ -67,6 +66,7 @@ public class SimulationBuilder {
                     JunctionLaneNavigableNode laneStart = new JunctionLaneNavigableNode(
                             simulation.getConfig().getRandomLaneSize()
                     );
+                    nodes.add(laneStart);
                     newRoad.addNextNode(laneStart);
                     laneStart.addNextNode(toLaneExit);
                 });
@@ -87,16 +87,19 @@ public class SimulationBuilder {
 
     public void connect(TrafficLightJunction from, VehicleSinkNavigableNode to) {
         RoadNavigableNode road = new RoadNavigableNode(1);
+        nodes.add(road);
         road.addNextNode(to);
 
         // Create new JunctionExit
         JunctionExitNavigableNode junctionExitNavigableNode = new JunctionExitNavigableNode();
+        nodes.add(junctionExitNavigableNode);
         junctionExitNavigableNode.addNextNode(road);
 
         // For each road going into a junction, create a new lane that connects with the sink
         from.getSourceRoads().forEach(incomingRoad -> {
             // Create new JunctionLane
             JunctionLaneNavigableNode junctionLaneNavigableNode = new JunctionLaneNavigableNode(1);
+            nodes.add(junctionLaneNavigableNode);
 
             // Connect lanes and junctions
             junctionLaneNavigableNode.addNextNode(junctionExitNavigableNode);
@@ -106,11 +109,13 @@ public class SimulationBuilder {
     public void connect(VehicleSourceNavigableNode from, TrafficLightJunction to) {
         // The Source connects to a road, leading up to lanes in a junction.
         RoadNavigableNode road = new RoadNavigableNode(1);
+        nodes.add(road);
         from.addNextNode(road);
 
         // For each Junction exit, create a lane to that junction and connect them
         to.getJunctionExits().forEach(exit -> {
                     JunctionLaneNavigableNode lane = new JunctionLaneNavigableNode(0);
+                    nodes.add(lane);
                     lane.addNextNode(exit);
                     to.addLane(lane);
         });
@@ -120,6 +125,9 @@ public class SimulationBuilder {
         return new ArrayList<>(junctions);
     }
 
+    public List<NavigableNode> getNavigableNodes() {
+        return new ArrayList<>(nodes);
+    }
 //    private void buildRoads() {
 //        // Step 1: Build all roads with their starting points.
 //        Map<TrafficLightJunction, Set<RoadNavigableNode>> roadEnds = new HashMap<>();
@@ -149,10 +157,4 @@ public class SimulationBuilder {
 //
 //        // Step 2: Connect all
 //    }
-
-    private void addNavigableNode(NavigableNode node) {
-        if (!this.nodes.contains(node)) {
-            this.nodes.add(node);
-        }
-    }
 }
