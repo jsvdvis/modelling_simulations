@@ -3,6 +3,7 @@ package nl.rug.modellingsimulations.model.navigablenode;
 import nl.rug.modellingsimulations.model.VehicleBuffer;
 import nl.rug.modellingsimulations.model.vehicle.Vehicle;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class VehicleSinkNavigableNode extends VehicleBuffer {
@@ -18,7 +19,8 @@ public class VehicleSinkNavigableNode extends VehicleBuffer {
 
     @Override
     public List<NavigableNode> getNextNodes() {
-        throw new IllegalStateException("Tried to get next node of a SinkNode.");
+        return new ArrayList<>();
+//        throw new IllegalStateException("Tried to get next node of a SinkNode.");
     }
 
     @Override

@@ -3,6 +3,7 @@ package nl.rug.modellingsimulations;
 import nl.rug.modellingsimulations.model.TrafficLightJunction;
 import nl.rug.modellingsimulations.model.vehicle.Vehicle;
 import nl.rug.modellingsimulations.simulation.Simulation;
+import nl.rug.modellingsimulations.ui.GraphStreamView;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -13,6 +14,8 @@ public class Simulator {
 
     public void run(Simulation simulation) {
         int iteration = 0;
+        GraphStreamView view = new GraphStreamView();
+        view.updateView(simulation);
         while(true) {
             simulation = step(simulation);
             iteration += 1;
