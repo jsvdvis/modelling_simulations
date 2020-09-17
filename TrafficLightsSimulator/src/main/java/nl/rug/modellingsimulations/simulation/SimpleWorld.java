@@ -2,6 +2,8 @@ package nl.rug.modellingsimulations.simulation;
 
 import nl.rug.modellingsimulations.config.DefaultSimulationConfig;
 import nl.rug.modellingsimulations.config.SimulationConfig;
+import nl.rug.modellingsimulations.graph.GraphMediator;
+import nl.rug.modellingsimulations.graph.GraphStreamMediator;
 import nl.rug.modellingsimulations.model.SimpleTrafficLightJunction;
 import nl.rug.modellingsimulations.model.TrafficLightJunction;
 import nl.rug.modellingsimulations.model.navigablenode.*;
@@ -20,16 +22,23 @@ public class SimpleWorld implements Simulation {
     private List<TrafficLightJunction> junctions;
     private ArrayList<Vehicle> vehicles = new ArrayList<>();
     private SimulationConfig simulationConfig = DefaultSimulationConfig.getInstance();
+    private GraphMediator graphMediator;
 
     public SimpleWorld() {
         initializeWorld();
+        initializeGraphMediator();
+    }
+
+    private void initializeGraphMediator() {
+        this.graphMediator = new GraphStreamMediator(this);
+        this.graphMediator.initializeGraph();
     }
 
     private void initializeWorld() {
         SimulationBuilder builder = new SimulationBuilder(this);
-        VehicleSourceNavigableNode vehicleSourceNavigableNode = new VehicleSourceNavigableNode();
-        VehicleSinkNavigableNode vehicleSinkNavigableNode1 = new VehicleSinkNavigableNode();
-        VehicleSinkNavigableNode vehicleSinkNavigableNode2 = new VehicleSinkNavigableNode();
+        VehicleSourceNavigableNode vehicleSourceNavigableNode = new VehicleSourceNavigableNode(new Point(0, 5));
+        VehicleSinkNavigableNode vehicleSinkNavigableNode1 = new VehicleSinkNavigableNode(new Point(1,0));
+        VehicleSinkNavigableNode vehicleSinkNavigableNode2 = new VehicleSinkNavigableNode(new Point(5,3));
 
         TrafficLightStrategy trafficLightStrategy = RoundRobinTimerTrafficLightStrategy.getInstance();
 
