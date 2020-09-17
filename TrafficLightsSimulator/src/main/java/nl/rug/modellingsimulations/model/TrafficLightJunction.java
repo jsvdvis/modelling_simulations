@@ -32,6 +32,8 @@ public abstract class TrafficLightJunction {
 
     public void addLane(JunctionLaneNavigableNode lane) {
         this.lanes.add(lane);
+        lane.setJunction(this);
+        lane.getJunctionExitNode().setJunction(this);
     }
 
     public Set<JunctionLaneNavigableNode> getJunctionLanes() {
@@ -55,10 +57,11 @@ public abstract class TrafficLightJunction {
 
     public Collection<List<JunctionLaneNavigableNode>> getJunctionLaneFromSameRoad() {
         return lanes.parallelStream()
-                .collect(Collectors.groupingByConcurrent(JunctionLaneNavigableNode::getSourceRoad)).values();
+                .collect(Collectors.groupingBy(JunctionLaneNavigableNode::getPreviousNodes)).values();
     }
 
     public List<RoadNavigableNode> getSourceRoads() {
+        // TODO: Use getPreviousNodes
         return lanes.parallelStream()
                 .map(JunctionLaneNavigableNode::getSourceRoad)
                 .collect(Collectors.toList());
