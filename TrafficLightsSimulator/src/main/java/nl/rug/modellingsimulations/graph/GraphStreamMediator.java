@@ -1,11 +1,17 @@
 package nl.rug.modellingsimulations.graph;
 
+import nl.rug.modellingsimulations.model.navigablenode.*;
 import nl.rug.modellingsimulations.simulation.Simulation;
 import org.graphstream.graph.Graph;
+import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.SingleGraph;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class GraphStreamMediator implements GraphMediator {
 
+    private final Map<NavigableNode, Node> nodes = new HashMap<>();
     private Simulation simulation;
     private Graph graph;
 
@@ -13,21 +19,134 @@ public class GraphStreamMediator implements GraphMediator {
         this.simulation = simulation;
     }
 
-    public void initializeGraph() {
-        this.graph = new SingleGraph("simulation");
+    public void createGraph() {
+        this.initializeGraph();
+//        this.createNodesAndEdges(
+//                (List<NavigableNode>)(List<?>) simulation.getSources(),
+//                new ArrayList<>()
+//        );
+        this.renderSimulation();
+    }
+
+    private void initializeGraph() {
+        graph = new SingleGraph("simulation");
+        graph.setAttribute(
+                "ui.stylesheet",
+                "node.road { " +
+                        "   fill-color: black; " +
+                        "}" +
+                        " " +
+                        "node.source { " +
+                        "   fill-color: green; " +
+                        "}" +
+                        " " +
+                        "node.sink { " +
+                        "   fill-color: red; " +
+                        "}" +
+                        " " +
+                        "node.lane { " +
+                        "   fill-color: purple; " +
+                        "}" +
+                        " " +
+                        "node.exit { " +
+                        "   fill-color: blue; " +
+                        "}"
+        );
         graph.display();
-        this.initializeNodes();
-        this.initializeEdges();
     }
 
-    private void initializeNodes() {
+    private void createNodesAndEdges(List<NavigableNode> nodesToProcess, List<NavigableNode> processedNodes) {
+        // Base case
+        if(nodesToProcess.size() == 0)
+            return;
 
+        nodesToProcess = nodesToProcess.stream()
+                // Add the current nodes to the graph
+                .peek(this::createGraphNode)
+                // Add all the next nodes to the graph
+                .peek(currentNode -> currentNode.getNextNodes().forEach(this::createGraphNode))
+                // Add the edges between the current nodes and the next nodes
+                .peek(currentNode ->
+                    currentNode.getNextNodes().forEach(nextNode -> createGraphEdge(currentNode, nextNode)))
+                // Mark the current node as being finished with processing
+                .peek(processedNodes::add)
+                // Map to the next nodes, since we want to process those next
+                .flatMap(currentNode -> currentNode.getNextNodes().stream())
+                // Filter the nodes to those that have not been processed yet
+                .filter(nextNode -> !processedNodes.contains(nextNode))
+                // Collect them in a list
+                .collect(Collectors.toList());
+
+        // Recursively process the next nodes
+        this.createNodesAndEdges(nodesToProcess, processedNodes);
     }
 
-    private void initializeEdges() {
+    public void updateView() {
+        nodes.keySet().forEach(this::updateNodeAttributes);
     }
 
-    public void updateView(Simulation simulation) {
+    private void renderSimulation() {
+        Set<NavigableNode> renderedNodes = new HashSet<>();
+        Set<NavigableNode> nodesToRender = new HashSet<>(simulation.getSources());
 
+        while (!nodesToRender.isEmpty()) {
+            renderedNodes.addAll(nodesToRender);
+            nodesToRender = nodesToRender
+                    .stream()
+                    .flatMap(navigableNode -> {
+                        createGraphNode(navigableNode);
+                        String nodeId = nodes.get(navigableNode).getId();
+                        navigableNode
+                                .getNextNodes()
+                                .forEach(nextNavigableNode -> {
+                                    createGraphNode(nextNavigableNode);
+                                    String nextNodeId = nodes.get(nextNavigableNode).getId();
+                                    graph.addEdge(nodeId + "_" + nextNodeId, nodeId, nextNodeId);
+                                });
+                        return navigableNode
+                                .getNextNodes()
+                                .stream()
+                                .filter(nextNavigableNode -> !renderedNodes.contains(nextNavigableNode));
+                    })
+                    .collect(Collectors.toSet());
+        }
+    }
+
+    private void createGraphNode(NavigableNode navigableNode) {
+        if (!nodes.containsKey(navigableNode)) {
+            String nodeId = "node_" + nodes.size();
+            Node node = graph.addNode(nodeId);
+            nodes.put(navigableNode, node);
+            updateNodeAttributes(navigableNode);
+        }
+    }
+
+    private void updateNodeAttributes(NavigableNode navigableNode) {
+        if(!this.nodes.containsKey(navigableNode))
+            throw new IllegalStateException("Trying to update node's attributes that is not in graph.");
+
+        Node node = this.nodes.get(navigableNode);
+        if (navigableNode instanceof RoadNavigableNode) {
+            node.setAttribute("ui.class", "road");
+        } else if (navigableNode instanceof JunctionLaneNavigableNode) {
+            node.setAttribute("ui.class", "lane");
+        } else if (navigableNode instanceof JunctionExitNavigableNode) {
+            node.setAttribute("ui.class", "exit");
+        } else if (navigableNode instanceof VehicleSourceNavigableNode) {
+            node.setAttribute("ui.class", "source");
+        } else if (navigableNode instanceof VehicleSinkNavigableNode) {
+            node.setAttribute("ui.class", "sink");
+        }
+    }
+
+    private void createGraphEdge(NavigableNode from, NavigableNode to) {
+        if(!nodes.containsKey(from) || !nodes.containsKey(to))
+            throw new IllegalStateException("One of the nodes to add an edge does not exist in the graph yet!");
+        String fromNodeId = nodes.get(from).getId();
+        String toNodeId = nodes.get(to).getId();
+        String edgeId = fromNodeId + "_" + toNodeId;
+        if(graph.getEdge(edgeId) != null)
+            return; // Already exists
+        graph.addEdge(edgeId, fromNodeId, toNodeId);
     }
 }

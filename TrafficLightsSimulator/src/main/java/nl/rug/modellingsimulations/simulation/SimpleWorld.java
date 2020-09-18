@@ -31,7 +31,7 @@ public class SimpleWorld implements Simulation {
 
     private void initializeGraphMediator() {
         this.graphMediator = new GraphStreamMediator(this);
-        this.graphMediator.initializeGraph();
+        this.graphMediator.createGraph();
     }
 
     private void initializeWorld() {
