@@ -5,6 +5,7 @@ import nl.rug.modellingsimulations.simulation.Simulation;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.SingleGraph;
+import org.graphstream.ui.swing.util.ImageCache;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -21,11 +22,14 @@ public class GraphStreamMediator implements GraphMediator {
 
     public void createGraph() {
         this.initializeGraph();
-//        this.createNodesAndEdges(
-//                (List<NavigableNode>)(List<?>) simulation.getSources(),
-//                new ArrayList<>()
-//        );
-        this.renderSimulation();
+        this.createNodesAndEdges(
+                (List<NavigableNode>)(List<?>) simulation.getSources(),
+                new ArrayList<>()
+        );
+    }
+
+    public void updateView() {
+        nodes.keySet().forEach(this::updateNodeAttributes);
     }
 
     private void initializeGraph() {
@@ -37,11 +41,29 @@ public class GraphStreamMediator implements GraphMediator {
                         "}" +
                         " " +
                         "node.source { " +
-                        "   fill-color: green; " +
+                        "   fill-color: lightgreen; " +
+                        "   stroke-mode: plain; " +
+                        "   stroke-color: #999; " +
+                        "   size: 35px;"+
+                        "   shadow-mode: plain; " +
+                        "   shadow-color: green; " +
+                        "   shadow-width: 4px; " +
+                        "   shadow-offset: 0px; " +
+                        "   icon-mode: at-right;"+
+                        "   icon: dyn-icon;"+
                         "}" +
                         " " +
                         "node.sink { " +
-                        "   fill-color: red; " +
+                        "   fill-color: pink; " +
+                        "   stroke-mode: plain; " +
+                        "   stroke-color: #999; " +
+                        "   size: 35px;"+
+                        "   shadow-mode: plain; " +
+                        "   shadow-color: red; " +
+                        "   shadow-width: 4px; " +
+                        "   shadow-offset: 0px; " +
+                        "   icon-mode: at-left;"+
+                        "   icon: dyn-icon;"+
                         "}" +
                         " " +
                         "node.lane { " +
@@ -50,8 +72,21 @@ public class GraphStreamMediator implements GraphMediator {
                         " " +
                         "node.exit { " +
                         "   fill-color: blue; " +
+                        "}" +
+                        " " +
+                        "edge {" +
+                        "   shadow-mode: plain; " +
+                        "   shadow-width: 3px; " +
+                        "   shadow-color: orange; " +
+                        "   shadow-offset: 0px; " +
+                        "   arrow-shape: arrow; " +
+                        "   arrow-size: 5px, 5px; " +
+                        //"   shape: angle; " +
+                        //"   size: 5px; " +
                         "}"
         );
+        graph.setAttribute("ui.antialias");
+        graph.setAttribute("ui.quality");
         graph.display();
     }
 
@@ -81,37 +116,6 @@ public class GraphStreamMediator implements GraphMediator {
         this.createNodesAndEdges(nodesToProcess, processedNodes);
     }
 
-    public void updateView() {
-        nodes.keySet().forEach(this::updateNodeAttributes);
-    }
-
-    private void renderSimulation() {
-        Set<NavigableNode> renderedNodes = new HashSet<>();
-        Set<NavigableNode> nodesToRender = new HashSet<>(simulation.getSources());
-
-        while (!nodesToRender.isEmpty()) {
-            renderedNodes.addAll(nodesToRender);
-            nodesToRender = nodesToRender
-                    .stream()
-                    .flatMap(navigableNode -> {
-                        createGraphNode(navigableNode);
-                        String nodeId = nodes.get(navigableNode).getId();
-                        navigableNode
-                                .getNextNodes()
-                                .forEach(nextNavigableNode -> {
-                                    createGraphNode(nextNavigableNode);
-                                    String nextNodeId = nodes.get(nextNavigableNode).getId();
-                                    graph.addEdge(nodeId + "_" + nextNodeId, nodeId, nextNodeId);
-                                });
-                        return navigableNode
-                                .getNextNodes()
-                                .stream()
-                                .filter(nextNavigableNode -> !renderedNodes.contains(nextNavigableNode));
-                    })
-                    .collect(Collectors.toSet());
-        }
-    }
-
     private void createGraphNode(NavigableNode navigableNode) {
         if (!nodes.containsKey(navigableNode)) {
             String nodeId = "node_" + nodes.size();
@@ -134,8 +138,10 @@ public class GraphStreamMediator implements GraphMediator {
             node.setAttribute("ui.class", "exit");
         } else if (navigableNode instanceof VehicleSourceNavigableNode) {
             node.setAttribute("ui.class", "source");
+            node.setAttribute("ui.icon", ImageCache.class.getClassLoader().getResource("source.png").toString());
         } else if (navigableNode instanceof VehicleSinkNavigableNode) {
             node.setAttribute("ui.class", "sink");
+            node.setAttribute("ui.icon", ImageCache.class.getClassLoader().getResource("sink.png").toString());
         }
     }
 
@@ -147,6 +153,6 @@ public class GraphStreamMediator implements GraphMediator {
         String edgeId = fromNodeId + "_" + toNodeId;
         if(graph.getEdge(edgeId) != null)
             return; // Already exists
-        graph.addEdge(edgeId, fromNodeId, toNodeId);
+        graph.addEdge(edgeId, fromNodeId, toNodeId, true);
     }
 }
