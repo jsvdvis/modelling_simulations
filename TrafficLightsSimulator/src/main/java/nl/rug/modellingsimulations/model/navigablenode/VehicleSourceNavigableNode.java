@@ -23,7 +23,7 @@ public class VehicleSourceNavigableNode extends VehicleBuffer {
     }
 
     @Override
-    public Point getPosition() {
+    public Point getPosition(boolean precise) {
         return position;
     }
 

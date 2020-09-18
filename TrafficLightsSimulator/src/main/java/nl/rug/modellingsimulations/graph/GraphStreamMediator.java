@@ -6,6 +6,7 @@ import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.SingleGraph;
 import org.graphstream.ui.swing.util.ImageCache;
+import org.graphstream.ui.view.Viewer;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -15,6 +16,7 @@ public class GraphStreamMediator implements GraphMediator {
     private final Map<NavigableNode, Node> nodes = new HashMap<>();
     private Simulation simulation;
     private Graph graph;
+    private Viewer viewer;
 
     public GraphStreamMediator(Simulation simulation) {
         this.simulation = simulation;
@@ -87,7 +89,8 @@ public class GraphStreamMediator implements GraphMediator {
         );
         graph.setAttribute("ui.antialias");
         graph.setAttribute("ui.quality");
-        graph.display();
+        viewer = graph.display();
+        viewer.disableAutoLayout();
     }
 
     private void createNodesAndEdges(List<NavigableNode> nodesToProcess, List<NavigableNode> processedNodes) {
@@ -120,6 +123,8 @@ public class GraphStreamMediator implements GraphMediator {
         if (!nodes.containsKey(navigableNode)) {
             String nodeId = "node_" + nodes.size();
             Node node = graph.addNode(nodeId);
+            node.setAttribute("x", navigableNode.getPosition(true).getX());
+            node.setAttribute("y", navigableNode.getPosition(true).getY());
             nodes.put(navigableNode, node);
             updateNodeAttributes(navigableNode);
         }

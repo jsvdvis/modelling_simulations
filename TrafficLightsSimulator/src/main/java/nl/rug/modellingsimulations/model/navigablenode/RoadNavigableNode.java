@@ -11,7 +11,6 @@ public class RoadNavigableNode extends VehicleBuffer {
 
     private List<NavigableNode> toNavigableNodes = new ArrayList<>();
     private Set<NavigableNode> fromNavigableNodes = new HashSet<>();
-    private NavigableNode previousNode;
 
     public RoadNavigableNode(int size) {
         super(size);
@@ -20,9 +19,6 @@ public class RoadNavigableNode extends VehicleBuffer {
     public void addNextNode(NavigableNode next) {
         this.toNavigableNodes.add(next);
         next.addPreviousNode(this);
-
-        if(next instanceof JunctionLaneNavigableNode)
-            ((JunctionLaneNavigableNode) next).setSourceRoad(this);
     }
 
     @Override
@@ -32,7 +28,7 @@ public class RoadNavigableNode extends VehicleBuffer {
 
     @Override
     public void addPreviousNode(NavigableNode previous) {
-        this.fromNavigableNodes.add(previousNode);
+        this.fromNavigableNodes.add(previous);
     }
 
     @Override
@@ -41,13 +37,17 @@ public class RoadNavigableNode extends VehicleBuffer {
     }
 
     @Override
-    public Point getPosition() {
+    public Point getPosition(boolean precise) {
         // Halfway between previous node and the next node
-        List<Point> nextPoints = toNavigableNodes.stream().map(NavigableNode::getPosition).collect(Collectors.toList());
-        return Point.avgPoint(nextPoints);
+        List<Point> nextPoints = toNavigableNodes.stream()
+                .map(toNode -> toNode.getPosition(true))
+                .collect(Collectors.toList());
+        List<Point> prevPoints = fromNavigableNodes.stream()
+                .map(fromNode -> fromNode.getPosition(true))
+                .collect(Collectors.toList());
+        Point avgNextNodes = Point.avgPoint(nextPoints);
+        Point avgPrevNodes = Point.avgPoint(prevPoints);
+        return avgNextNodes.getHalfWay(avgPrevNodes);
     }
 
-    public void setPreviousNode(NavigableNode previousNode) {
-        this.previousNode = previousNode;
-    }
 }

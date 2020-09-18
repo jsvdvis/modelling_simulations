@@ -103,6 +103,7 @@ public class SimulationBuilder {
 
             // Connect lanes and junctions
             junctionLaneNavigableNode.addNextNode(junctionExitNavigableNode);
+            from.addLane(junctionLaneNavigableNode);
         });
     }
 

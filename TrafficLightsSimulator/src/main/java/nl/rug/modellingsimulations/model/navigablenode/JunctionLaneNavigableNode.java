@@ -1,5 +1,6 @@
 package nl.rug.modellingsimulations.model.navigablenode;
 
+import nl.rug.modellingsimulations.config.JunctionSpacingConfig;
 import nl.rug.modellingsimulations.model.TrafficLightJunction;
 import nl.rug.modellingsimulations.model.VehicleBuffer;
 import nl.rug.modellingsimulations.utilities.Point;
@@ -14,7 +15,6 @@ import java.util.Set;
  */
 public class JunctionLaneNavigableNode extends VehicleBuffer {
 
-    private RoadNavigableNode sourceRoad;
     private JunctionExitNavigableNode junctionExitNode;
     private TrafficLightJunction junction;
     private boolean isGreenLight = false;
@@ -49,9 +49,20 @@ public class JunctionLaneNavigableNode extends VehicleBuffer {
     }
 
     @Override
-    public Point getPosition() {
-        // Use relative position of junction
-        throw new IllegalStateException("Not implemented.");
+    public Point getPosition(boolean precise) {
+        if(!precise)
+            return this.getJunction().getPosition();
+
+        // First, we obtain the position of the junction with a small offset to the side that we are on.
+        Point positionJunctionSide = this.getJunction().getPositionOfLanesOrExit(this);
+
+        // Next, we need to make a small offset between all nodes on the same side, orthogonal to the prev angle.
+        // TODO
+        List<NavigableNode> nodesOnSide = this.junction.getJunctionLaneOrExitFromSameRoad(this);
+        int amountOfNodesOnSide = nodesOnSide.size();
+
+        return positionJunctionSide;
+
     }
 
     public boolean isGreenLight() {
@@ -63,15 +74,27 @@ public class JunctionLaneNavigableNode extends VehicleBuffer {
     }
 
     public RoadNavigableNode getSourceRoad() {
-        return sourceRoad;
+        return (RoadNavigableNode) previousNodes.iterator().next();
     }
 
-    public void setSourceRoad(RoadNavigableNode sourceRoad) {
-        this.sourceRoad = sourceRoad;
+    public NavigableNode getNodeBeforeSourceRoad() {
+        if(previousNodes.size() != 1 || !(previousNodes.iterator().next() instanceof RoadNavigableNode))
+            throw new IllegalStateException("The previous node(s) of the junction lane is not a single road!");
+
+        RoadNavigableNode sourceRoad = getSourceRoad();
+
+        if(sourceRoad.getPreviousNodes().size() > 1)
+            throw new IllegalStateException("Unhandled case: Get source junction of lane when road has > 1 prev nodes.");
+
+        return sourceRoad.getPreviousNodes().iterator().next();
     }
 
     public void setJunction(TrafficLightJunction junction) {
         this.junction = junction;
+    }
+
+    public TrafficLightJunction getJunction() {
+        return junction;
     }
 
     public JunctionExitNavigableNode getJunctionExitNode() {

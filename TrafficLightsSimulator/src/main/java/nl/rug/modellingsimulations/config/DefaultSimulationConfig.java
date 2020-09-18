@@ -4,11 +4,11 @@ import nl.rug.modellingsimulations.utilities.RandomGenerator;
 
 public class DefaultSimulationConfig implements SimulationConfig {
 
-    private final RandomGenerator random = RandomGenerator.getInstance();
+    private static final RandomGenerator random = RandomGenerator.getInstance();
     private static DefaultSimulationConfig instance = null;
 
-    private final int TRAFFIC_LIGHT_LANE_SIZE_MIN = 1;
-    private final int TRAFFIC_LIGHT_LANE_SIZE_MAX = 6;
+    private static final int TRAFFIC_LIGHT_LANE_SIZE_MIN = 1;
+    private static final int TRAFFIC_LIGHT_LANE_SIZE_MAX = 6;
 
     public static SimulationConfig getInstance() {
         if(instance == null)
