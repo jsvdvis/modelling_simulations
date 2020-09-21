@@ -1,6 +1,5 @@
 package nl.rug.modellingsimulations.model.navigablenode;
 
-import nl.rug.modellingsimulations.config.JunctionSpacingConfig;
 import nl.rug.modellingsimulations.model.TrafficLightJunction;
 import nl.rug.modellingsimulations.model.VehicleBuffer;
 import nl.rug.modellingsimulations.utilities.Point;
@@ -34,6 +33,12 @@ public class JunctionLaneNavigableNode extends VehicleBuffer {
     }
 
     @Override
+    public void removeNextNode(NavigableNode next) {
+        this.junctionExitNode = null;
+        next.removePreviousNode(this);
+    }
+
+    @Override
     public Set<NavigableNode> getPreviousNodes() {
         return previousNodes;
     }
@@ -41,6 +46,11 @@ public class JunctionLaneNavigableNode extends VehicleBuffer {
     @Override
     public void addPreviousNode(NavigableNode previous) {
         this.previousNodes.add(previous);
+    }
+
+    @Override
+    public void removePreviousNode(NavigableNode previous) {
+        this.previousNodes.remove(previous);
     }
 
     @Override

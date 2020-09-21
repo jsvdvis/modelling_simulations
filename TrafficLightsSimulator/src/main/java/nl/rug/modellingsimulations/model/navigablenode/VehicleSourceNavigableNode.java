@@ -33,6 +33,12 @@ public class VehicleSourceNavigableNode extends VehicleBuffer {
     }
 
     @Override
+    public void removeNextNode(NavigableNode next) {
+        this.navigableNode = null;
+        next.removePreviousNode(this);
+    }
+
+    @Override
     public Set<NavigableNode> getPreviousNodes() {
         return Set.of();
     }
@@ -40,6 +46,11 @@ public class VehicleSourceNavigableNode extends VehicleBuffer {
     @Override
     public void addPreviousNode(NavigableNode previous) {
         throw new IllegalStateException("Trying to add a previous node to a source.");
+    }
+
+    @Override
+    public void removePreviousNode(NavigableNode previous) {
+        throw new IllegalStateException("Trying to remove a previous node from a source.");
     }
 
 }

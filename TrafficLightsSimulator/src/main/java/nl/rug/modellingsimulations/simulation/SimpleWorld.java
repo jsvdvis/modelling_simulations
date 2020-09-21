@@ -49,11 +49,11 @@ public class SimpleWorld implements Simulation {
         builder.connectTwoWayJunction(junction1, junction2);
         builder.connect(junction2, junction3);
         builder.connect(junction3, junction1);
-        builder.build();
 
         builder.connect(vehicleSourceNavigableNode, junction2);
         builder.connect(junction1, vehicleSinkNavigableNode1);
         builder.connect(junction3, vehicleSinkNavigableNode2);
+        builder.build();
 
         this.junctions = builder.getJunctions();
         this.nodes = builder.getNavigableNodes();

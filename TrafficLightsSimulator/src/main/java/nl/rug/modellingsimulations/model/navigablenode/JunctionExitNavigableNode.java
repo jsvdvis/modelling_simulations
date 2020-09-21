@@ -32,6 +32,12 @@ public class JunctionExitNavigableNode extends VehicleBuffer {
     }
 
     @Override
+    public void removeNextNode(NavigableNode next) {
+        this.roadNavigableNode = null;
+        next.removePreviousNode(this);
+    }
+
+    @Override
     public Set<NavigableNode> getPreviousNodes() {
         return previousNodes;
     }
@@ -39,6 +45,11 @@ public class JunctionExitNavigableNode extends VehicleBuffer {
     @Override
     public void addPreviousNode(NavigableNode previous) {
         this.previousNodes.add(previous);
+    }
+
+    @Override
+    public void removePreviousNode(NavigableNode previous) {
+        this.previousNodes.remove(previous);
     }
 
     @Override

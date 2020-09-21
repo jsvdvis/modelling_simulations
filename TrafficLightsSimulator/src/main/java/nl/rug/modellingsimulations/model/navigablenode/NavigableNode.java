@@ -13,9 +13,11 @@ public interface NavigableNode {
 
     List<NavigableNode> getNextNodes();
     void addNextNode(NavigableNode next);
+    void removeNextNode(NavigableNode next);
 
     Set<NavigableNode> getPreviousNodes();
     void addPreviousNode(NavigableNode previous);
+    void removePreviousNode(NavigableNode previous);
 
     boolean canMovePosition(Vehicle vehicle);
     void movePosition(Vehicle vehicle);

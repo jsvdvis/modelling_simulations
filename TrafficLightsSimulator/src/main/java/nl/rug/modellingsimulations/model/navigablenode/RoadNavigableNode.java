@@ -16,9 +16,16 @@ public class RoadNavigableNode extends VehicleBuffer {
         super(size);
     }
 
+    @Override
     public void addNextNode(NavigableNode next) {
         this.toNavigableNodes.add(next);
         next.addPreviousNode(this);
+    }
+
+    @Override
+    public void removeNextNode(NavigableNode next) {
+        this.toNavigableNodes.remove(next);
+        next.removePreviousNode(this);
     }
 
     @Override
@@ -29,6 +36,11 @@ public class RoadNavigableNode extends VehicleBuffer {
     @Override
     public void addPreviousNode(NavigableNode previous) {
         this.fromNavigableNodes.add(previous);
+    }
+
+    @Override
+    public void removePreviousNode(NavigableNode previous) {
+        this.fromNavigableNodes.remove(previous);
     }
 
     @Override

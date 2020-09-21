@@ -25,6 +25,11 @@ public class VehicleSinkNavigableNode extends VehicleBuffer {
     }
 
     @Override
+    public void removeNextNode(NavigableNode next) {
+        throw new IllegalStateException("Can not remove a next node from a sink.");
+    }
+
+    @Override
     public Set<NavigableNode> getPreviousNodes() {
         return previousNodes;
     }
@@ -32,6 +37,11 @@ public class VehicleSinkNavigableNode extends VehicleBuffer {
     @Override
     public void addPreviousNode(NavigableNode previous) {
         this.previousNodes.add(previous);
+    }
+
+    @Override
+    public void removePreviousNode(NavigableNode previous) {
+        this.previousNodes.remove(previous);
     }
 
     @Override

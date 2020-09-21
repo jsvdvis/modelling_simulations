@@ -38,6 +38,10 @@ public abstract class TrafficLightJunction {
         lane.getJunctionExitNode().setJunction(this);
     }
 
+    public void removeLane(JunctionLaneNavigableNode lane) {
+        this.lanes.remove(lane);
+    }
+
     public void addExemptedLane(JunctionLaneNavigableNode master, JunctionLaneNavigableNode slave) {
         if (!this.exemptedLanes.containsKey(master)) {
             this.exemptedLanes.put(master, new HashSet<>());
