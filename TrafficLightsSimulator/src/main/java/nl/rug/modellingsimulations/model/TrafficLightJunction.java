@@ -10,6 +10,7 @@ import nl.rug.modellingsimulations.utilities.Point;
 
 import java.util.*;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -61,20 +62,33 @@ public abstract class TrafficLightJunction {
      * Obtain an ordered list of all nodes on one side of the junction, ordered from left to right
      * @return
      */
-    public List<NavigableNode> getJunctionLaneOrExitFromSameRoad(JunctionLaneNavigableNode lane) {
+    public List<NavigableNode> getJunctionLaneOrExitFromSameRoad(NavigableNode laneOrExit) {
         List<NavigableNode> orderedNodes = new ArrayList<>();
 
         // Obtain the exit on the same side as this lane, if any
         // This is always 1 exit, and is the first from left to right.
-        this.lanes.stream()
-                .map(JunctionLaneNavigableNode::getJunctionExitNode)
-                .filter(exit -> exit.getNextNodeAfterRoad().equals(lane.getNodeBeforeSourceRoad()))
-                .forEach(orderedNodes::add);
+        if(laneOrExit instanceof JunctionLaneNavigableNode) {
+            this.lanes.stream()
+                    .map(JunctionLaneNavigableNode::getJunctionExitNode)
+                    .filter(exit -> exit.getNextNodeAfterRoad().equals(((JunctionLaneNavigableNode)laneOrExit).getNodeBeforeSourceRoad()))
+                    .forEach(orderedNodes::add);
+        } else if(laneOrExit instanceof JunctionExitNavigableNode) {
+            orderedNodes.add(laneOrExit);
+        }
+
+        // First, obtain the road on the same side of the junction
+        RoadNavigableNode roadNode = null;
+        if(laneOrExit instanceof JunctionLaneNavigableNode) {
+            roadNode = ((JunctionLaneNavigableNode) laneOrExit).getSourceRoad();
+        } else if(laneOrExit instanceof JunctionExitNavigableNode) {
+            roadNode = (RoadNavigableNode) laneOrExit.getNextNodes().get(0);
+        }
 
         // Add the other nodes on the same side of the current lane
+        RoadNavigableNode finalRoadNode = roadNode;
         this.lanes.stream()
                 // Obtain the other lanes on the same side
-                .filter(sameSidedLane -> sameSidedLane.getSourceRoad().equals(sameSidedLane.getSourceRoad()))
+                .filter(sameSidedLane -> sameSidedLane.getSourceRoad().equals(finalRoadNode))
                 // Obtain the junctionSourceSink they link to AFTER the junction, and compare the angle and sort on that
                 .sorted((lane1, lane2) -> {
                     double angleLane1WithAfterJunction = lane1.getJunctionExitNode()
@@ -88,15 +102,6 @@ public abstract class TrafficLightJunction {
                     return Double.compare(angleLane1WithAfterJunction, angleLane2WithAfterJunction);
                 }
                 ).forEach(orderedNodes::add);
-
-        return orderedNodes;
-    }
-
-    public List<NavigableNode> getJunctionLaneOrExitFromSameRoad(JunctionExitNavigableNode exit) {
-        // The exit is always the first one in the order.
-        List<NavigableNode> orderedNodes = List.of(exit);
-
-        // TODO
 
         return orderedNodes;
     }
@@ -116,7 +121,13 @@ public abstract class TrafficLightJunction {
                 .collect(Collectors.toList());
     }
 
-    public Point getPositionOfLanesOrExit(NavigableNode laneOrExit) {
+    public Point getPositionOfLanesOrExitSideGroup(NavigableNode laneOrExit) {
+        Point otherNodePosition = getPositionOfNodeLaneOrExitConnectsTo(laneOrExit);
+
+        return getPosition().moveTowards(otherNodePosition, JunctionSpacingConfig.getJunctionLaneExitOffset());
+    }
+
+    public Point getPositionOfNodeLaneOrExitConnectsTo(NavigableNode laneOrExit) {
         // First, obtain the coordinate that we want to move our point a little bit towards
         Point otherNodePosition;
         if(laneOrExit instanceof JunctionLaneNavigableNode) {
@@ -142,18 +153,34 @@ public abstract class TrafficLightJunction {
         } else {
             throw new IllegalStateException("Trying to get relative position to junction of object not a lane or exit.");
         }
+        return otherNodePosition;
+    }
 
-        // Translate junction coordinate from cartesian to polar
-        double theta = (getPosition().getAngle(otherNodePosition));
-        double r = 0;
+    public Point getPositionOfLanesOrExit(NavigableNode junctionLaneOrExit) {
+        if(!(junctionLaneOrExit instanceof JunctionLaneNavigableNode) &&
+                !(junctionLaneOrExit instanceof JunctionExitNavigableNode))
+            throw new IllegalStateException("May only call function on a lane or exit!");
 
-        // Add a bit of offset to the lane
-        r += JunctionSpacingConfig.getJunctionLaneExitOffset();
+        // First, we obtain the position of the junction with a small offset to the side that we are on.
+        Point positionJunctionSide = this.getPositionOfLanesOrExitSideGroup(junctionLaneOrExit);
 
-        // Go from polar to cartesian
-        double x = getPosition().getX() + r * Math.cos(theta);
-        double y = getPosition().getY() + r * Math.sin(theta);
+        // Rotate the position of the other junction by 90 degrees.
+        Point otherNodePoint = this.getPositionOfNodeLaneOrExitConnectsTo(junctionLaneOrExit);
+        otherNodePoint = otherNodePoint.rotate_around(positionJunctionSide, 90);
 
-        return new Point(x, y);
+        // Next, we get the index of this node in the "list" of lanes/exits on the same side of the road
+        List<NavigableNode> nodesOnSide = null;
+        if(junctionLaneOrExit instanceof JunctionLaneNavigableNode) {
+
+            nodesOnSide = this.getJunctionLaneOrExitFromSameRoad((JunctionLaneNavigableNode) junctionLaneOrExit);
+        } else if(junctionLaneOrExit instanceof JunctionExitNavigableNode) {
+            nodesOnSide = this.getJunctionLaneOrExitFromSameRoad((JunctionExitNavigableNode) junctionLaneOrExit);
+        }
+        int nthNodeOnSideOfJunction = nodesOnSide.indexOf(junctionLaneOrExit);
+        double centerIndex = nodesOnSide.size() / 2.0;
+        double differenceFromCenterIndex = Math.abs(nthNodeOnSideOfJunction - centerIndex);
+        double distanceToMoveToSide = JunctionSpacingConfig.getSameSideNodeOffset() * differenceFromCenterIndex;
+
+        return positionJunctionSide.moveTowards(otherNodePoint, distanceToMoveToSide);
     }
 }

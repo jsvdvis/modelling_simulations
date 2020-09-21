@@ -38,4 +38,26 @@ public class Point {
         double yAvg = points.stream().mapToDouble(Point::getY).average().orElseThrow();
         return new Point(xAvg, yAvg);
     }
+
+    public Point rotate_around(Point centerPoint, double angleDegrees) {
+        return new Point(
+                Math.cos(angleDegrees) * (this.getX() - centerPoint.getX()) - Math.sin(angleDegrees) * (this.y - centerPoint.y) + centerPoint.x,
+                Math.sin(angleDegrees) * (this.x - centerPoint.getX()) + Math.cos(angleDegrees) * (this.y - centerPoint.y) + centerPoint.y
+        );
+    }
+
+    public Point moveTowards(Point other, double distance) {
+        Point unitVector = getUnitVector(other);
+        return new Point(getX() + unitVector.getX() * distance, getY() + unitVector.getY() * distance);
+    }
+
+    public Point getVector(Point other) {
+        return new Point(other.getX() - getX(), other.getY() - getY());
+    }
+
+    public Point getUnitVector(Point other) {
+        Point vector = getVector(other);
+        double size = Math.sqrt(vector.getX() * vector.getX() + vector.getY() * vector.getY());
+        return new Point(vector.getX() / size, vector.getY() / size);
+    }
 }

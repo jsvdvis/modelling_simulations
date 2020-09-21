@@ -2,6 +2,8 @@ package nl.rug.modellingsimulations.simulation;
 
 import nl.rug.modellingsimulations.model.TrafficLightJunction;
 import nl.rug.modellingsimulations.model.navigablenode.*;
+import nl.rug.modellingsimulations.model.trafficlightstrategy.TrafficLightStrategy;
+import nl.rug.modellingsimulations.utilities.RandomGenerator;
 import nl.rug.modellingsimulations.utilities.SortByJunctionDirection;
 
 import java.util.*;
@@ -203,6 +205,19 @@ public class SimulationBuilder {
                                 roadStarts
                                         .get(junction)
                                         .stream()
+//                                        .filter(junctionExit -> {
+//                                            NavigableNode endOfNextRoad = junctionExit.getNextNodeAfterRoad();
+//                                            NavigableNode startOfPreviousRoad = road.getPreviousNodes().iterator().next();
+//                                            if (
+//                                                    !(endOfNextRoad instanceof JunctionLaneNavigableNode)
+//                                                    || !(startOfPreviousRoad instanceof JunctionExitNavigableNode)
+//                                            ) {
+//                                                return true;
+//                                            }
+//                                            TrafficLightJunction nextJunction = ((JunctionLaneNavigableNode) endOfNextRoad).getJunction();
+//                                            TrafficLightJunction previousJunction = ((JunctionExitNavigableNode) startOfPreviousRoad).getJunction();
+//                                            return nextJunction != previousJunction;
+//                                        })
                                         .forEach(junctionExit -> {
                                             JunctionLaneNavigableNode lane = new JunctionLaneNavigableNode(
                                                     simulation.getConfig().getRandomLaneSize()

@@ -62,15 +62,7 @@ public class JunctionExitNavigableNode extends VehicleBuffer {
         if(!precise)
             return junction.getPosition();
 
-        // First, we obtain the position of the junction with a small offset to the side that we are on.
-        Point positionJunctionSide = this.getJunction().getPositionOfLanesOrExit(this);
-
-        // Next, we need to make a small offset between all nodes on the same side, orthogonal to the prev angle.
-        // TODO
-        List<NavigableNode> nodesOnSide = this.junction.getJunctionLaneOrExitFromSameRoad(this);
-        int amountOfNodesOnSide = nodesOnSide.size();
-
-        return positionJunctionSide;
+        return this.getJunction().getPositionOfLanesOrExit(this);
     }
 
     public void setJunction(TrafficLightJunction junction) {
