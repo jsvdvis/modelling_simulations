@@ -1,5 +1,6 @@
 package nl.rug.modellingsimulations.utilities;
 
+import java.awt.geom.AffineTransform;
 import java.util.Collection;
 
 public class Point {
@@ -40,10 +41,15 @@ public class Point {
     }
 
     public Point rotate_around(Point centerPoint, double angleDegrees) {
-        return new Point(
-                Math.cos(angleDegrees) * (this.getX() - centerPoint.getX()) - Math.sin(angleDegrees) * (this.y - centerPoint.y) + centerPoint.x,
-                Math.sin(angleDegrees) * (this.x - centerPoint.getX()) + Math.cos(angleDegrees) * (this.y - centerPoint.y) + centerPoint.y
-        );
+//        return new Point(
+//                Math.cos(angleDegrees) * (this.getX() - centerPoint.getX()) - Math.sin(angleDegrees) * (this.y - centerPoint.y) + centerPoint.x,
+//                Math.sin(angleDegrees) * (this.x - centerPoint.getX()) + Math.cos(angleDegrees) * (this.y - centerPoint.y) + centerPoint.y
+//        );
+        // The code above gives a slight error. Below is more reliable.
+        double[] pt = {x, y};
+        AffineTransform.getRotateInstance(Math.toRadians(angleDegrees), centerPoint.x, centerPoint.y)
+                .transform(pt, 0, pt, 0, 1); // specifying to use this double[] to hold coords
+        return new Point(pt[0], pt[1]);
     }
 
     public Point moveTowards(Point other, double distance) {
