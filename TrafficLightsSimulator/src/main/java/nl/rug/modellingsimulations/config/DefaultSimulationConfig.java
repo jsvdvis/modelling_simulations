@@ -10,6 +10,8 @@ public class DefaultSimulationConfig implements SimulationConfig {
     private static final int TRAFFIC_LIGHT_LANE_SIZE_MIN = 1;
     private static final int TRAFFIC_LIGHT_LANE_SIZE_MAX = 6;
 
+    private DefaultSimulationConfig() {}
+
     public static SimulationConfig getInstance() {
         if(instance == null)
             instance = new DefaultSimulationConfig();
@@ -19,5 +21,6 @@ public class DefaultSimulationConfig implements SimulationConfig {
     public int getRandomLaneSize() {
         return random.getIntegerBetween(TRAFFIC_LIGHT_LANE_SIZE_MIN, TRAFFIC_LIGHT_LANE_SIZE_MAX);
     }
+
 
 }

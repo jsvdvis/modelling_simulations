@@ -20,4 +20,6 @@ public interface Vehicle {
     void tryAccelerate();
     void fullBrake();
 
+    void setRoutingStrategy(RoutingStrategy routingStrategy);
+    void setSpeed(int maxSpeed);
 }

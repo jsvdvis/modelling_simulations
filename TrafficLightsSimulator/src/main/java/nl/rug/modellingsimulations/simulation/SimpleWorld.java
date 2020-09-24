@@ -22,16 +22,9 @@ public class SimpleWorld implements Simulation {
     private List<TrafficLightJunction> junctions;
     private ArrayList<Vehicle> vehicles = new ArrayList<>();
     private SimulationConfig simulationConfig = DefaultSimulationConfig.getInstance();
-    private GraphMediator graphMediator;
 
     public SimpleWorld() {
         initializeWorld();
-        initializeGraphMediator();
-    }
-
-    private void initializeGraphMediator() {
-        this.graphMediator = new GraphStreamMediator(this);
-        this.graphMediator.createGraph();
     }
 
     private void initializeWorld() {
@@ -40,11 +33,12 @@ public class SimpleWorld implements Simulation {
         VehicleSinkNavigableNode vehicleSinkNavigableNode1 = new VehicleSinkNavigableNode(new Point(1,0));
         VehicleSinkNavigableNode vehicleSinkNavigableNode2 = new VehicleSinkNavigableNode(new Point(5,3));
 
-        TrafficLightStrategy trafficLightStrategy = RoundRobinTimerTrafficLightStrategy.getInstance();
-
-        TrafficLightJunction junction1 = new SimpleTrafficLightJunction(trafficLightStrategy, new Point(0, 0));
-        TrafficLightJunction junction2 = new SimpleTrafficLightJunction(trafficLightStrategy, new Point(0, 4));
-        TrafficLightJunction junction3 = new SimpleTrafficLightJunction(trafficLightStrategy, new Point(5, 4));
+        TrafficLightJunction junction1 = new SimpleTrafficLightJunction(new Point(0, 0));
+        junction1.setTrafficLightStrategy(new RoundRobinTimerTrafficLightStrategy(junction1));
+        TrafficLightJunction junction2 = new SimpleTrafficLightJunction(new Point(0, 4));
+        junction2.setTrafficLightStrategy(new RoundRobinTimerTrafficLightStrategy(junction2));
+        TrafficLightJunction junction3 = new SimpleTrafficLightJunction(new Point(5, 4));
+        junction3.setTrafficLightStrategy(new RoundRobinTimerTrafficLightStrategy(junction3));
 
         builder.connectTwoWayJunction(junction1, junction2);
         builder.connect(junction2, junction3);
@@ -80,5 +74,20 @@ public class SimpleWorld implements Simulation {
     public SimulationConfig getConfig() {
         return this.simulationConfig;
     }
+
+    @Override
+    public void addNewVehicle(Vehicle vehicle) {
+        if(!vehicle.getCurrentNavigableNode().canMovePosition(vehicle))
+            throw new IllegalStateException("Trying to add vehicle to source while it is full!");
+
+        vehicle.getCurrentNavigableNode().movePosition(vehicle);
+        this.vehicles.add(vehicle);
+    }
+
+    @Override
+    public void removeVehicle(Vehicle vehicle) {
+        this.vehicles.remove(vehicle);
+    }
+
 
 }

@@ -52,12 +52,7 @@ public class VehicleSinkNavigableNode extends VehicleBuffer {
 
     @Override
     public boolean canMovePosition(Vehicle vehicle) {
-        throw new IllegalStateException("Tried to check if a vehicle can move inside a sink!");
-    }
-
-    @Override
-    public void movePosition(Vehicle vehicle) {
-        // TODO: void the vehicle
+        return true;
     }
 
     @Override

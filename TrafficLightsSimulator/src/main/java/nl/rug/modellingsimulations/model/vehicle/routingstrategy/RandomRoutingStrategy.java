@@ -8,19 +8,14 @@ import java.util.List;
 
 public class RandomRoutingStrategy implements RoutingStrategy {
 
-    private RandomRoutingStrategy instance = null;
+    private final Vehicle vehicle;
 
-    // Singleton
-    private RandomRoutingStrategy(){}
-
-    public RandomRoutingStrategy getInstance() {
-        if(instance == null)
-            instance = new RandomRoutingStrategy();
-        return instance;
+    public RandomRoutingStrategy(Vehicle vehicle) {
+        this.vehicle = vehicle;
     }
 
     @Override
-    public NavigableNode pickNextNode(Vehicle vehicle) {
+    public NavigableNode pickNextNode() {
         List<NavigableNode> possibleNodes = vehicle.getCurrentNavigableNode().getNextNodes();
         return RandomGenerator.getInstance().getRandomOfList(possibleNodes);
     }

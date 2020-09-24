@@ -20,12 +20,11 @@ public abstract class TrafficLightJunction {
 
     private final Set<JunctionLaneNavigableNode> lanes;
     private final Map<JunctionLaneNavigableNode, Set<JunctionLaneNavigableNode>> exemptedLanes = new HashMap<>();
-    private final TrafficLightStrategy trafficLightStrategy;
+    private TrafficLightStrategy trafficLightStrategy;
     private final Point position;
 
-    public TrafficLightJunction(TrafficLightStrategy trafficLightStrategy, Point position) {
+    public TrafficLightJunction(Point position) {
         this.lanes = new HashSet<>();
-        this.trafficLightStrategy = trafficLightStrategy;
         this.position = position;
     }
 
@@ -202,5 +201,9 @@ public abstract class TrafficLightJunction {
         double distanceToMoveToSide = JunctionSpacingConfig.getSameSideNodeOffset() * differenceFromCenterIndex;
 
         return positionJunctionSide.moveTowards(otherNodePoint, distanceToMoveToSide);
+    }
+
+    public void setTrafficLightStrategy(TrafficLightStrategy trafficLightStrategy) {
+        this.trafficLightStrategy = trafficLightStrategy;
     }
 }

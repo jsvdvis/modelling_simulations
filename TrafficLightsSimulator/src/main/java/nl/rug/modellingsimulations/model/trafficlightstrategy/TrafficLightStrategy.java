@@ -7,6 +7,6 @@ import nl.rug.modellingsimulations.model.TrafficLightJunction;
  */
 public interface TrafficLightStrategy {
 
-    void updateTrafficLights(TrafficLightJunction trafficLightJunction);
+    void updateTrafficLights();
 
 }

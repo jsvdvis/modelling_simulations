@@ -4,20 +4,14 @@ import nl.rug.modellingsimulations.model.TrafficLightJunction;
 
 public class RoundRobinTimerTrafficLightStrategy implements TrafficLightStrategy {
 
-    private static RoundRobinTimerTrafficLightStrategy instance = null;
+    private final TrafficLightJunction trafficLightJunction;
 
-    private RoundRobinTimerTrafficLightStrategy() {}
-
-    public static RoundRobinTimerTrafficLightStrategy getInstance() {
-        if (instance == null) {
-            instance = new RoundRobinTimerTrafficLightStrategy();
-        }
-        return instance;
+    public RoundRobinTimerTrafficLightStrategy(TrafficLightJunction trafficLightJunction) {
+        this.trafficLightJunction = trafficLightJunction;
     }
 
     @Override
-    public void updateTrafficLights(TrafficLightJunction trafficLightJunction) {
-
+    public void updateTrafficLights() {
     }
 
 }

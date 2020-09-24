@@ -23,4 +23,6 @@ public interface NavigableNode {
     void movePosition(Vehicle vehicle);
     Point getPosition(boolean precise);
 
+    double getTrafficLoad();
+
 }

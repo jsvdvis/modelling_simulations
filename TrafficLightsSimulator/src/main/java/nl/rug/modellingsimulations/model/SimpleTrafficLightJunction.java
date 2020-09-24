@@ -8,8 +8,8 @@ import nl.rug.modellingsimulations.utilities.Point;
  */
 public class SimpleTrafficLightJunction extends TrafficLightJunction {
 
-    public SimpleTrafficLightJunction(TrafficLightStrategy trafficLightStrategy, Point point) {
-        super(trafficLightStrategy, point);
+    public SimpleTrafficLightJunction(Point point) {
+        super(point);
     }
 
 }

@@ -8,7 +8,9 @@ import org.graphstream.graph.implementations.SingleGraph;
 import org.graphstream.ui.swing.util.ImageCache;
 import org.graphstream.ui.view.Viewer;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class GraphStreamMediator implements GraphMediator {
@@ -28,6 +30,7 @@ public class GraphStreamMediator implements GraphMediator {
                 (List<NavigableNode>)(List<?>) simulation.getSources(),
                 new ArrayList<>()
         );
+        updateView();
     }
 
     public void updateView() {
@@ -39,7 +42,7 @@ public class GraphStreamMediator implements GraphMediator {
         graph.setAttribute(
                 "ui.stylesheet",
                 "node.road { " +
-                        "   fill-color: black; " +
+                        "   size: 5px;" +
                         "}" +
                         " " +
                         "node.source { " +
@@ -59,27 +62,27 @@ public class GraphStreamMediator implements GraphMediator {
                         "   fill-color: pink; " +
                         "   stroke-mode: plain; " +
                         "   stroke-color: #999; " +
-                        "   size: 35px;"+
+                        "   size: 35px;" +
                         "   shadow-mode: plain; " +
                         "   shadow-color: red; " +
                         "   shadow-width: 4px; " +
                         "   shadow-offset: 0px; " +
-                        "   icon-mode: at-left;"+
-                        "   icon: dyn-icon;"+
+                        "   icon-mode: at-left;" +
+                        "   icon: dyn-icon;" +
                         "}" +
                         " " +
                         "node.lane { " +
-                        "   fill-color: purple; " +
+                        //"   fill-color: purple; " +
                         "}" +
                         " " +
                         "node.exit { " +
-                        "   fill-color: blue; " +
+                        "   size: 5px; " +
                         "}" +
                         " " +
                         "edge {" +
                         "   shadow-mode: plain; " +
-                        "   shadow-width: 3px; " +
-                        "   shadow-color: orange; " +
+                        "   shadow-width: 4px; " +
+                        //"   shadow-color: orange; " +
                         "   shadow-offset: 0px; " +
                         "   arrow-shape: arrow; " +
                         "   arrow-size: 5px, 5px; " +
@@ -125,8 +128,20 @@ public class GraphStreamMediator implements GraphMediator {
             Node node = graph.addNode(nodeId);
             node.setAttribute("x", navigableNode.getPosition(true).getX());
             node.setAttribute("y", navigableNode.getPosition(true).getY());
+            if (navigableNode instanceof RoadNavigableNode) {
+                node.setAttribute("ui.class", "road");
+            } else if (navigableNode instanceof JunctionLaneNavigableNode) {
+                node.setAttribute("ui.class", "lane");
+            } else if (navigableNode instanceof JunctionExitNavigableNode) {
+                node.setAttribute("ui.class", "exit");
+            } else if (navigableNode instanceof VehicleSourceNavigableNode) {
+                node.setAttribute("ui.class", "source");
+                node.setAttribute("ui.icon", ImageCache.class.getClassLoader().getResource("source.png").toString());
+            } else if (navigableNode instanceof VehicleSinkNavigableNode) {
+                node.setAttribute("ui.class", "sink");
+                node.setAttribute("ui.icon", ImageCache.class.getClassLoader().getResource("sink.png").toString());
+            }
             nodes.put(navigableNode, node);
-            updateNodeAttributes(navigableNode);
         }
     }
 
@@ -135,19 +150,24 @@ public class GraphStreamMediator implements GraphMediator {
             throw new IllegalStateException("Trying to update node's attributes that is not in graph.");
 
         Node node = this.nodes.get(navigableNode);
-        if (navigableNode instanceof RoadNavigableNode) {
-            node.setAttribute("ui.class", "road");
-        } else if (navigableNode instanceof JunctionLaneNavigableNode) {
-            node.setAttribute("ui.class", "lane");
-        } else if (navigableNode instanceof JunctionExitNavigableNode) {
-            node.setAttribute("ui.class", "exit");
-        } else if (navigableNode instanceof VehicleSourceNavigableNode) {
-            node.setAttribute("ui.class", "source");
-            node.setAttribute("ui.icon", ImageCache.class.getClassLoader().getResource("source.png").toString());
-        } else if (navigableNode instanceof VehicleSinkNavigableNode) {
-            node.setAttribute("ui.class", "sink");
-            node.setAttribute("ui.icon", ImageCache.class.getClassLoader().getResource("sink.png").toString());
+
+        // The color of a lane, is the color of its traffic light.
+        if(navigableNode instanceof JunctionLaneNavigableNode) {
+            if(((JunctionLaneNavigableNode) navigableNode).isGreenLight())
+                node.setAttribute("ui.style", "fill-color: green;");
+            else
+                node.setAttribute("ui.style", "fill-color: red;");
         }
+
+        // All incoming edges to this node, should have a gradient color based on the current node's load.
+        int[] rgb = loadToRGB(navigableNode.getTrafficLoad());
+        int color = new Color(rgb[0], rgb[1], rgb[2]).getRGB();
+        String hexColor = String.format("#%06X", (0xFFFFFF & color));
+        node.enteringEdges().forEach(edge -> {
+                    edge.setAttribute("ui.style", "shadow-color: " + hexColor + ";");
+        }
+        );
+
     }
 
     private void createGraphEdge(NavigableNode from, NavigableNode to) {
@@ -159,5 +179,26 @@ public class GraphStreamMediator implements GraphMediator {
         if(graph.getEdge(edgeId) != null)
             return; // Already exists
         graph.addEdge(edgeId, fromNodeId, toNodeId, true);
+    }
+
+    private int[] loadToRGB(double load) {
+        double red;
+        double green;
+        double blue = 0;
+        if(load <= 0.5) {
+            // Gradient between Green -> Orange
+            load *= 2; // normalize from 0 -> 1
+            red = load;
+            green = (1 - 0.5*load);
+        } else {
+            // Gradient between orange -> red
+            red = 1;
+            green = 0.5 - 0.5*load;
+        }
+        return new int[] {
+                (int) (red * 255),
+                (int) (green * 255),
+                (int) (blue * 255)
+        };
     }
 }

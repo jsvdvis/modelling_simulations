@@ -16,4 +16,6 @@ public interface Simulation {
     List<VehicleSourceNavigableNode> getSources();
     SimulationConfig getConfig();
 
+    void addNewVehicle(Vehicle vehicle);
+    void removeVehicle(Vehicle vehicle);
 }
