@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 public abstract class TrafficLightJunction {
 
     private final Set<JunctionLaneNavigableNode> lanes;
-    private final Map<JunctionLaneNavigableNode, Set<JunctionLaneNavigableNode>> exemptedLanes = new HashMap<>();
+    private Map<JunctionLaneNavigableNode, Set<JunctionLaneNavigableNode>> exemptedLanes = new HashMap<>();
     private TrafficLightStrategy trafficLightStrategy;
     private final Point position;
 
@@ -42,15 +42,8 @@ public abstract class TrafficLightJunction {
         this.lanes.remove(lane);
     }
 
-    public void addExemptedLane(JunctionLaneNavigableNode master, JunctionLaneNavigableNode slave) {
-        if (!this.exemptedLanes.containsKey(master)) {
-            this.exemptedLanes.put(master, new HashSet<>());
-        }
-        Set<JunctionLaneNavigableNode> exemptedLanesForMaster = this.exemptedLanes.get(master);
-        if (exemptedLanesForMaster.contains(slave)) {
-            throw new IllegalStateException("The specified navigable lane already has this lane on the exempted list.");
-        }
-        exemptedLanesForMaster.add(slave);
+    public void setExemptedLanes(Map<JunctionLaneNavigableNode, Set<JunctionLaneNavigableNode>> exemptedLanes) {
+        this.exemptedLanes = exemptedLanes;
     }
 
     public Point getPosition() {

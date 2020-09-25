@@ -1,7 +1,6 @@
 package nl.rug.modellingsimulations;
 
 import nl.rug.modellingsimulations.simulation.SimpleWorld;
-import nl.rug.modellingsimulations.utilities.Point;
 
 public class Main {
 
