@@ -1,9 +1,7 @@
 package nl.rug.modellingsimulations.simulation;
 
-import nl.rug.modellingsimulations.model.TrafficLightJunction;
+import nl.rug.modellingsimulations.model.trafficlight.TrafficLightJunction;
 import nl.rug.modellingsimulations.model.navigablenode.*;
-import nl.rug.modellingsimulations.model.trafficlightstrategy.TrafficLightStrategy;
-import nl.rug.modellingsimulations.utilities.RandomGenerator;
 import nl.rug.modellingsimulations.utilities.SortByJunctionDirection;
 
 import java.util.*;

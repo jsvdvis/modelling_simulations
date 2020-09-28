@@ -1,6 +1,5 @@
-package nl.rug.modellingsimulations.model;
+package nl.rug.modellingsimulations.model.trafficlight;
 
-import nl.rug.modellingsimulations.model.trafficlightstrategy.TrafficLightStrategy;
 import nl.rug.modellingsimulations.utilities.Point;
 
 /**

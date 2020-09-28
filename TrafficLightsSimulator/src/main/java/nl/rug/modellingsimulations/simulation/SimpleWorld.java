@@ -2,13 +2,10 @@ package nl.rug.modellingsimulations.simulation;
 
 import nl.rug.modellingsimulations.config.DefaultSimulationConfig;
 import nl.rug.modellingsimulations.config.SimulationConfig;
-import nl.rug.modellingsimulations.graph.GraphMediator;
-import nl.rug.modellingsimulations.graph.GraphStreamMediator;
-import nl.rug.modellingsimulations.model.SimpleTrafficLightJunction;
-import nl.rug.modellingsimulations.model.TrafficLightJunction;
+import nl.rug.modellingsimulations.model.trafficlight.SimpleTrafficLightJunction;
+import nl.rug.modellingsimulations.model.trafficlight.TrafficLightJunction;
 import nl.rug.modellingsimulations.model.navigablenode.*;
-import nl.rug.modellingsimulations.model.trafficlightstrategy.RoundRobinTimerTrafficLightStrategy;
-import nl.rug.modellingsimulations.model.trafficlightstrategy.TrafficLightStrategy;
+import nl.rug.modellingsimulations.model.trafficlight.trafficlightstrategy.RoundRobinTimerTrafficLightStrategy;
 import nl.rug.modellingsimulations.model.vehicle.Vehicle;
 import nl.rug.modellingsimulations.utilities.Point;
 

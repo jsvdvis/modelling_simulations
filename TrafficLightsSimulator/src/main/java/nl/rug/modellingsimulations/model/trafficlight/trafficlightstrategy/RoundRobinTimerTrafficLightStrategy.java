@@ -1,6 +1,6 @@
-package nl.rug.modellingsimulations.model.trafficlightstrategy;
+package nl.rug.modellingsimulations.model.trafficlight.trafficlightstrategy;
 
-import nl.rug.modellingsimulations.model.TrafficLightJunction;
+import nl.rug.modellingsimulations.model.trafficlight.TrafficLightJunction;
 
 public class RoundRobinTimerTrafficLightStrategy implements TrafficLightStrategy {
 

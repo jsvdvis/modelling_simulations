@@ -1,11 +1,11 @@
-package nl.rug.modellingsimulations.model;
+package nl.rug.modellingsimulations.model.trafficlight;
 
 import nl.rug.modellingsimulations.config.JunctionSpacingConfig;
 import nl.rug.modellingsimulations.model.navigablenode.JunctionExitNavigableNode;
 import nl.rug.modellingsimulations.model.navigablenode.JunctionLaneNavigableNode;
 import nl.rug.modellingsimulations.model.navigablenode.NavigableNode;
 import nl.rug.modellingsimulations.model.navigablenode.RoadNavigableNode;
-import nl.rug.modellingsimulations.model.trafficlightstrategy.TrafficLightStrategy;
+import nl.rug.modellingsimulations.model.trafficlight.trafficlightstrategy.TrafficLightStrategy;
 import nl.rug.modellingsimulations.utilities.Point;
 
 import java.util.*;

@@ -1,4 +1,4 @@
-package nl.rug.modellingsimulations.model;
+package nl.rug.modellingsimulations.model.navigablenode;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;

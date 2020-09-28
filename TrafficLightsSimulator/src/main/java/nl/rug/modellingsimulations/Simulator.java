@@ -3,7 +3,7 @@ package nl.rug.modellingsimulations;
 import nl.rug.modellingsimulations.config.SimulatorConfig;
 import nl.rug.modellingsimulations.graph.GraphMediator;
 import nl.rug.modellingsimulations.graph.GraphStreamMediator;
-import nl.rug.modellingsimulations.model.TrafficLightJunction;
+import nl.rug.modellingsimulations.model.trafficlight.TrafficLightJunction;
 import nl.rug.modellingsimulations.model.navigablenode.VehicleSinkNavigableNode;
 import nl.rug.modellingsimulations.model.navigablenode.VehicleSourceNavigableNode;
 import nl.rug.modellingsimulations.model.vehicle.AbstractVehicle;

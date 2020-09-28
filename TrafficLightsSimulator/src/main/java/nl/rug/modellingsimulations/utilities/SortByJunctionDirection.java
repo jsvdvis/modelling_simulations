@@ -1,6 +1,6 @@
 package nl.rug.modellingsimulations.utilities;
 
-import nl.rug.modellingsimulations.model.TrafficLightJunction;
+import nl.rug.modellingsimulations.model.trafficlight.TrafficLightJunction;
 
 import java.util.Comparator;
 
