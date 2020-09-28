@@ -7,6 +7,7 @@ import nl.rug.modellingsimulations.model.navigablenode.NavigableNode;
 import nl.rug.modellingsimulations.model.navigablenode.RoadNavigableNode;
 import nl.rug.modellingsimulations.model.trafficlight.trafficlightstrategy.TrafficLightStrategy;
 import nl.rug.modellingsimulations.utilities.Point;
+import nl.rug.modellingsimulations.utilities.Vector;
 
 import java.util.*;
 import java.util.List;
@@ -56,6 +57,7 @@ public abstract class TrafficLightJunction {
      */
     public List<NavigableNode> getJunctionLaneOrExitFromSameSide(NavigableNode laneOrExit) {
         List<NavigableNode> orderedNodes = new ArrayList<>();
+        Vector previousJunctionAngle;
 
         // Obtain the exit on the same side as this lane, if any
         // This is always 1 exit, and is the first from left to right.
@@ -75,8 +77,22 @@ public abstract class TrafficLightJunction {
                         }
                     })
                     .forEach(orderedNodes::add);
+
+            previousJunctionAngle = new Vector(
+                    getPosition(),
+                    ((JunctionLaneNavigableNode) laneOrExit)
+                            .getNodeBeforeSourceRoad()
+                            .getPosition(false)
+            );
         } else if(laneOrExit instanceof JunctionExitNavigableNode) {
             orderedNodes.add(laneOrExit);
+
+            previousJunctionAngle = new Vector(
+                    getPosition(),
+                    ((JunctionExitNavigableNode) laneOrExit)
+                            .getNextNodeAfterRoad()
+                            .getPosition(false)
+            );
         } else {
             throw new IllegalStateException("Input must be a valid Junction Lane or Junction Exit.");
         }
@@ -109,17 +125,34 @@ public abstract class TrafficLightJunction {
                 .filter(isLaneSameSideAsNode)
                 // Obtain the junctionSourceSink they link to AFTER the junction, and compare the angle and sort on that
                 .sorted((lane1, lane2) -> {
-                    double angleLane1WithAfterJunction = lane1.getJunctionExitNode()
+                    Vector vLane1 = new Vector(
+                            getPosition(),
+                            lane1.getJunctionExitNode()
                             .getNextNodeAfterRoad()
                             .getPosition(false)
-                            .getAngle(getPosition());
-                    double angleLane2WithAfterJunction = lane2.getJunctionExitNode()
-                            .getNextNodeAfterRoad()
-                            .getPosition(false)
-                            .getAngle(getPosition());
-                    return Double.compare(angleLane2WithAfterJunction, angleLane1WithAfterJunction);
-                }
-                ).forEach(orderedNodes::add);
+                    );
+                    Vector vLane2 = new Vector(
+                            getPosition(),
+                            lane2.getJunctionExitNode()
+                                    .getNextNodeAfterRoad()
+                                    .getPosition(false)
+                    );
+
+                    return Double.compare(
+                            previousJunctionAngle.getRelativeAngle(vLane1),
+                            previousJunctionAngle.getRelativeAngle(vLane2)
+                    );
+
+//                    double angleLane1WithAfterJunction = getPosition().getAngle(lane1.getJunctionExitNode()
+//                            .getNextNodeAfterRoad()
+//                            .getPosition(false));
+//                    double angleLane2WithAfterJunction = getPosition().getAngle(lane2.getJunctionExitNode()
+//                            .getNextNodeAfterRoad()
+//                            .getPosition(false));
+//                    System.out.println(angleLane1WithAfterJunction + " " + angleLane2WithAfterJunction);
+//                    return Double.compare(angleLane2WithAfterJunction, angleLane1WithAfterJunction);
+                })
+                .forEach(orderedNodes::add);
 
         return orderedNodes;
     }
