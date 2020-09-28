@@ -2,8 +2,12 @@ package nl.rug.modellingsimulations.simulation;
 
 import nl.rug.modellingsimulations.model.trafficlight.TrafficLightJunction;
 import nl.rug.modellingsimulations.model.navigablenode.*;
+import nl.rug.modellingsimulations.model.trafficlightstrategy.TrafficLightStrategy;
+import nl.rug.modellingsimulations.utilities.Point;
+import nl.rug.modellingsimulations.utilities.RandomGenerator;
 import nl.rug.modellingsimulations.utilities.SortByJunctionDirection;
 
+import java.awt.geom.Line2D;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -37,43 +41,6 @@ public class SimulationBuilder {
         this.addJunction(from);
         this.addJunction(to);
 
-//        RoadNavigableNode newRoad = new RoadNavigableNode(
-//            (int)Math.ceil(from.getPosition().getDistance(to.getPosition()))
-//        );
-//        nodes.add(newRoad);
-//        JunctionExitNavigableNode laneExit = new JunctionExitNavigableNode();
-//        nodes.add(laneExit);
-//        laneExit.addNextNode(newRoad);
-//
-//        // Create junction lanes for all roads ending at from.
-//        from
-//                .getSourceRoads()
-//                .stream()
-//                .forEach(fromRoad -> {
-//                    JunctionLaneNavigableNode laneStart = new JunctionLaneNavigableNode(
-//                            simulation.getConfig().getRandomLaneSize()
-//                    );
-//                    nodes.add(laneStart);
-//                    from.addLane(laneStart);
-//                    fromRoad.addNextNode(laneStart);
-//                    laneStart.addNextNode(laneExit);
-//                });
-//
-//        // Create junction lanes for all roads starting at to.
-//        to
-//                .getJunctionExits()
-//                .stream()
-//                .forEach(toLaneExit -> {
-//                    JunctionLaneNavigableNode laneStart = new JunctionLaneNavigableNode(
-//                            simulation.getConfig().getRandomLaneSize()
-//                    );
-//                    nodes.add(laneStart);
-//                    from.addLane(laneStart);
-//                    newRoad.addNextNode(laneStart);
-//                    laneStart.addNextNode(toLaneExit);
-//                });
-
-
         Set<TrafficLightJunction> currentConnections = this.connections.get(from);
         if (currentConnections.contains(to)) {
             throw new IllegalStateException("This connection already exists.");
@@ -87,45 +54,11 @@ public class SimulationBuilder {
     public void connect(TrafficLightJunction from, VehicleSinkNavigableNode to) {
         this.sinks.put(from, to);
         nodes.add(to);
-//        RoadNavigableNode road = new RoadNavigableNode(1);
-//        nodes.add(road);
-//        road.addNextNode(to);
-//
-//        // Create new JunctionExit
-//        JunctionExitNavigableNode junctionExitNavigableNode = new JunctionExitNavigableNode();
-//        nodes.add(junctionExitNavigableNode);
-//        junctionExitNavigableNode.addNextNode(road);
-//
-//        // For each road going into a junction, create a new lane that connects with the sink
-//        from.getSourceRoads().forEach(incomingRoad -> {
-//            // Create new JunctionLane
-//            JunctionLaneNavigableNode junctionLaneNavigableNode = new JunctionLaneNavigableNode(1);
-//            nodes.add(junctionLaneNavigableNode);
-//            incomingRoad.addNextNode(junctionLaneNavigableNode);
-//
-//            // Connect lanes and junctions
-//            junctionLaneNavigableNode.addNextNode(junctionExitNavigableNode);
-//            from.addLane(junctionLaneNavigableNode);
-//        });
     }
 
     public void connect(VehicleSourceNavigableNode from, TrafficLightJunction to) {
         this.sources.put(to, from);
         nodes.add(from);
-//        // The Source connects to a road, leading up to lanes in a junction.
-//        RoadNavigableNode road = new RoadNavigableNode(1);
-//        nodes.add(road);
-//        from.addNextNode(road);
-//        nodes.add(from);
-//
-//        // For each Junction exit, create a lane to that junction and connect them
-//        to.getJunctionExits().forEach(exit -> {
-//                    JunctionLaneNavigableNode lane = new JunctionLaneNavigableNode(1);
-//                    road.addNextNode(lane);
-//                    nodes.add(lane);
-//                    lane.addNextNode(exit);
-//                    to.addLane(lane);
-//        });
     }
 
     public List<TrafficLightJunction> getJunctions() {
@@ -135,7 +68,6 @@ public class SimulationBuilder {
     public List<NavigableNode> getNavigableNodes() {
         return new ArrayList<>(nodes);
     }
-
 
     public void build() {
         // Step 1: Build all roads with their starting- and ending points.
@@ -203,19 +135,6 @@ public class SimulationBuilder {
                                 roadStarts
                                         .get(junction)
                                         .stream()
-//                                        .filter(junctionExit -> {
-//                                            NavigableNode endOfNextRoad = junctionExit.getNextNodeAfterRoad();
-//                                            NavigableNode startOfPreviousRoad = road.getPreviousNodes().iterator().next();
-//                                            if (
-//                                                    !(endOfNextRoad instanceof JunctionLaneNavigableNode)
-//                                                    || !(startOfPreviousRoad instanceof JunctionExitNavigableNode)
-//                                            ) {
-//                                                return true;
-//                                            }
-//                                            TrafficLightJunction nextJunction = ((JunctionLaneNavigableNode) endOfNextRoad).getJunction();
-//                                            TrafficLightJunction previousJunction = ((JunctionExitNavigableNode) startOfPreviousRoad).getJunction();
-//                                            return nextJunction != previousJunction;
-//                                        })
                                         .forEach(junctionExit -> {
                                             JunctionLaneNavigableNode lane = new JunctionLaneNavigableNode(
                                                     simulation.getConfig().getRandomLaneSize()
@@ -290,6 +209,68 @@ public class SimulationBuilder {
                             });
                         });
                     });
+        });
+    }
+
+    public void buildExemptedLanes() {
+        junctions.stream().forEach(junction -> {
+            Map<JunctionLaneNavigableNode, Set<JunctionLaneNavigableNode>> exemptedLanes = new HashMap<>();
+            Set<JunctionLaneNavigableNode> junctionLanes = new HashSet<>();
+
+            // Step 1: for each exit, only one lane is allowed to be open at a time.
+            junction.getJunctionExits().stream().forEach(junctionExit -> {
+                Set<JunctionLaneNavigableNode> lanes = junctionExit
+                        .getPreviousNodes()
+                        .stream()
+                        .map(node -> (JunctionLaneNavigableNode) node)
+                        .collect(Collectors.toSet());
+
+                // We need the lanes for the next step. Since we have them now, we might as well add them to a set already.
+                junctionLanes.addAll(lanes);
+
+                lanes.stream().forEach(lane -> {
+                    if (!exemptedLanes.containsKey(lane)) {
+                        exemptedLanes.put(lane, new HashSet<>());
+                    }
+                    Set<JunctionLaneNavigableNode> otherLanes = exemptedLanes.get(lane);
+                    otherLanes.addAll(
+                            lanes.stream().filter(otherLane -> !otherLane.equals(lane)).collect(Collectors.toSet())
+                    );
+                });
+            });
+
+            // Step 2: Lane crossings are not allowed.
+
+            // First build lines from each lane to its exit
+            Map<JunctionLaneNavigableNode, Line2D> laneLines = new HashMap<>();
+            junctionLanes.stream().forEach(lane -> {
+                Point lanePosition = lane.getPosition(true);
+                Point exitPosition = lane.getJunctionExitNode().getPosition(true);
+                laneLines.put(lane, new Line2D.Double(
+                        lanePosition.getX(),
+                        lanePosition.getY(),
+                        exitPosition.getX(),
+                        exitPosition.getY()
+                ));
+            });
+
+            // Then add the lanes whose line intersect with the current to the set.
+            junctionLanes.stream().forEach(lane -> {
+                Line2D laneLine = laneLines.get(lane);
+                Set<JunctionLaneNavigableNode> intersectingLanes = junctionLanes
+                        .stream()
+                        // Exclude itself
+                        .filter(otherLane -> !lane.equals(otherLane))
+                        // Exempted lanes don't need to be checked again.
+                        .filter(otherLane -> !exemptedLanes.get(lane).contains(otherLane))
+                        // Filter on intersection with other lanes
+                        .filter(otherLane -> laneLine.intersectsLine(laneLines.get(otherLane)))
+                        .collect(Collectors.toSet());
+
+                exemptedLanes.get(lane).addAll(intersectingLanes);
+            });
+
+            junction.setExemptedLanes(exemptedLanes);
         });
     }
 }
