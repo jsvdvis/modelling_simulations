@@ -41,8 +41,16 @@ public abstract class VehicleBuffer implements NavigableNode {
         }
 
         // If we are already in the buffer and in the last slot, we check if the next node has space for us!
-        if(isExitingBuffer(vehicle))
+        if(isExitingBuffer(vehicle)) {
+            // If we are waiting before a traffic light, it must be green in order to be allowed to move
+            if(this instanceof JunctionLaneNavigableNode
+                && !((JunctionLaneNavigableNode) this).isGreenLight()) {
+                return false;
+            }
+
+            // This is not a traffic light. We can move as long as the next node's slot is free
             return vehicle.getNextNavigableNode().canMovePosition(vehicle);
+        }
 
         // We can make a move if the next slot is available.
         return vehicleSlots.get(vehicleSlots.inverse().get(vehicle) + 1) == null;

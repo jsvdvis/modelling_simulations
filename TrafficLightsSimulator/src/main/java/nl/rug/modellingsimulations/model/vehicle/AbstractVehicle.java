@@ -44,12 +44,6 @@ public abstract class AbstractVehicle implements Vehicle {
 
     @Override
     public boolean canMakeMove() {
-        if(this.getCurrentNavigableNode() instanceof JunctionLaneNavigableNode
-                && !((JunctionLaneNavigableNode) this.getCurrentNavigableNode()).isGreenLight()
-        ) {
-            // Traffic light is not green. We are unable to move.
-            return false;
-        }
         return navigableNode.canMovePosition(this);
     }
 
