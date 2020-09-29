@@ -17,8 +17,8 @@ public class SimulationBuilder {
     private final Set<TrafficLightJunction> junctions = new HashSet<>();
     private final Set<NavigableNode> nodes = new HashSet<>();
     private final Map<TrafficLightJunction, Set<TrafficLightJunction>> connections = new HashMap<>();
-    private final Map<TrafficLightJunction, VehicleSourceNavigableNode> sources = new HashMap<>();
-    private final Map<TrafficLightJunction, VehicleSinkNavigableNode> sinks = new HashMap<>();
+    private final Map<VehicleSourceNavigableNode, TrafficLightJunction> sources = new HashMap<>();
+    private final Map<VehicleSinkNavigableNode, TrafficLightJunction> sinks = new HashMap<>();
     private final Simulation simulation;
 
     public SimulationBuilder(Simulation simulation) {
@@ -52,12 +52,12 @@ public class SimulationBuilder {
     }
 
     public void connect(TrafficLightJunction from, VehicleSinkNavigableNode to) {
-        this.sinks.put(from, to);
+        this.sinks.put(to, from);
         nodes.add(to);
     }
 
     public void connect(VehicleSourceNavigableNode from, TrafficLightJunction to) {
-        this.sources.put(to, from);
+        this.sources.put(from, to);
         nodes.add(from);
     }
 
@@ -101,8 +101,8 @@ public class SimulationBuilder {
 
         // Handle sources.
         this.sources.entrySet().stream().forEach(entry -> {
-            VehicleSourceNavigableNode from = entry.getValue();
-            TrafficLightJunction to = entry.getKey();
+            VehicleSourceNavigableNode from = entry.getKey();
+            TrafficLightJunction to = entry.getValue();
 
             RoadNavigableNode road = new RoadNavigableNode(1);
             nodes.add(road);
@@ -112,8 +112,8 @@ public class SimulationBuilder {
 
         // Handle sinks.
         this.sinks.entrySet().stream().forEach(entry -> {
-            TrafficLightJunction from = entry.getKey();
-            VehicleSinkNavigableNode to = entry.getValue();
+            TrafficLightJunction from = entry.getValue();
+            VehicleSinkNavigableNode to = entry.getKey();
 
             RoadNavigableNode road = new RoadNavigableNode(1);
             nodes.add(road);
@@ -147,7 +147,7 @@ public class SimulationBuilder {
                             });
                 });
 
-        // Step 3: Remove turn-backs (caused by two traffic junctions that are connected both ways)
+        // Step 3: Remove turn-backs caused by two traffic junctions that are connected both ways
         this.connections.keySet().stream().forEach(from -> {
             this.connections
                     .get(from)
@@ -197,7 +197,7 @@ public class SimulationBuilder {
                                     .map(lane -> (JunctionLaneNavigableNode) lane)
                                     .collect(Collectors.toSet());
 
-                            lanesToRemove.forEach(lane -> {
+                            lanesToRemove.stream().forEach(lane -> {
                                 nodes.remove(lane);
                                 from.removeLane(lane);
                                 for (Iterator<NavigableNode> iterator = lane.getNextNodes().iterator(); iterator.hasNext();) {
@@ -208,6 +208,44 @@ public class SimulationBuilder {
                                 }
                             });
                         });
+                    });
+        });
+
+        // Step 4: Remove turnbacks for sources & sinks.
+        this.sources.entrySet().stream().forEach(sourceEntry -> {
+            TrafficLightJunction junction = sourceEntry.getValue();
+            Set<JunctionExitNavigableNode> sinkExits = this.sinks
+                    .entrySet()
+                    .stream()
+                    .filter(sinkEntry -> sinkEntry.getValue().equals(junction))
+                    .map(sinkEntry -> (JunctionExitNavigableNode) sinkEntry
+                            .getKey()
+                            .getPreviousNodes()
+                            .iterator()
+                            .next()
+                            .getPreviousNodes()
+                            .iterator()
+                            .next()
+                    )
+                    .collect(Collectors.toSet());
+
+            Set<JunctionLaneNavigableNode> lanesToRemove = sourceEntry.getKey()
+                    .getNextNodes()
+                    .get(0)
+                    .getNextNodes()
+                    .stream()
+                    .map(lane -> (JunctionLaneNavigableNode)lane)
+                    .filter(lane -> sinkExits.contains(lane.getJunctionExitNode()))
+                    .collect(Collectors.toSet());
+            lanesToRemove.stream().forEach(lane -> {
+                        nodes.remove(lane);
+                        junction.removeLane(lane);
+                        for (Iterator<NavigableNode> iterator = lane.getNextNodes().iterator(); iterator.hasNext();) {
+                            lane.removeNextNode(iterator.next());
+                        }
+                        for (Iterator<NavigableNode> iterator = lane.getPreviousNodes().iterator(); iterator.hasNext();) {
+                            iterator.next().removeNextNode(lane);
+                        }
                     });
         });
     }
