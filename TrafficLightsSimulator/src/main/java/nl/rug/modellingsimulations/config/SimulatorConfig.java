@@ -2,11 +2,10 @@ package nl.rug.modellingsimulations.config;
 
 import nl.rug.modellingsimulations.model.vehicle.AbstractVehicle;
 import nl.rug.modellingsimulations.model.vehicle.SlowVehicle;
-import nl.rug.modellingsimulations.model.vehicle.Vehicle;
-import nl.rug.modellingsimulations.model.vehicle.routingstrategy.RandomRoutingStrategy;
+import nl.rug.modellingsimulations.model.vehicle.routingstrategy.RandomImpatientRoutingStrategy;
+import nl.rug.modellingsimulations.model.vehicle.routingstrategy.RandomPatientRoutingStrategy;
 import nl.rug.modellingsimulations.model.vehicle.routingstrategy.RoutingStrategy;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public class SimulatorConfig {
@@ -18,7 +17,8 @@ public class SimulatorConfig {
     );
 
     private static final Map<Class<? extends RoutingStrategy>, Integer> ROUTING_CHANCE_TYPE_MAP = Map.of(
-            RandomRoutingStrategy.class, 100
+            RandomImpatientRoutingStrategy.class, 30,
+            RandomPatientRoutingStrategy.class, 70
     );
 
     private SimulatorConfig(){}

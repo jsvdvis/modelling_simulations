@@ -9,7 +9,7 @@ import nl.rug.modellingsimulations.model.navigablenode.VehicleSourceNavigableNod
 import nl.rug.modellingsimulations.model.vehicle.AbstractVehicle;
 import nl.rug.modellingsimulations.model.vehicle.SlowVehicle;
 import nl.rug.modellingsimulations.model.vehicle.Vehicle;
-import nl.rug.modellingsimulations.model.vehicle.routingstrategy.RandomRoutingStrategy;
+import nl.rug.modellingsimulations.model.vehicle.routingstrategy.RandomImpatientRoutingStrategy;
 import nl.rug.modellingsimulations.model.vehicle.routingstrategy.RoutingStrategy;
 import nl.rug.modellingsimulations.simulation.Simulation;
 import nl.rug.modellingsimulations.utilities.RandomGenerator;
@@ -48,15 +48,16 @@ public class Simulator {
      * 1. Retrieve all TrafficLightJunctions
      * 2. Update the state (lights) of each TrafficLightJunction
      * 3. Retrieve all vehicles
-     * 4. During each step, each vehicle has N possible actions (determined by speed).
+     * 4. For each vehicle, determine the number of allowed movements (determined by speed)
      * 5. Create vehicles at the sources if chance allows
-     * 6a. Vehicles with 0 moves left, will accelerate if able to keep moving
+     * 6. As long as vehicles can still make moves, do the following
+     * 6a. Put Vehicles with 0 moves left on a list to accelerate, if their next movement is not hindered
      * 6b. All vehicles that have moves remaining but CANNOT make that move, have to break!
      * 6c. Get a list of movable vehicles
      * 6d. Move the vehicle, and reduce the maximum amount of movements remaining
      * 6e. For each vehicle sink, remove the vehicle, if any
      * 6f. Replenish the vehicle sources, if required
-     * 7. Accelerate all vehicles that did not brake and can still make a move
+     * 7. Accelerate all vehicles that did not brake during this step and can still make a move
      */
     private Simulation step() {
         // TODO: deep copy of the simulation, so state transitions from one to the other
@@ -82,9 +83,10 @@ public class Simulator {
         generateVehiclesAtSources(-1);
 
         Set<Vehicle> canMoveAfterIteration = new HashSet<>();
+        // STEP 6: As long as vehicles can still make moves, do the following
         while(vehicleMovesAvailable.size() > 0) {
 
-            // STEP 6a: Vehicles with 0 moves left, will accelerate if able to keep moving
+            // STEP 6a: Put Vehicles with 0 moves left on a list to accelerate, if their next movement is not hindered
             vehicleMovesAvailable.entrySet()
                     .parallelStream()
                     .filter(x -> x.getValue() == 0 && x.getKey().canMakeMove())
@@ -184,8 +186,8 @@ public class Simulator {
 
                 // Create new vehicle of this type!
                 RoutingStrategy routingStrategy = null;
-                if(stratChance.getKey().equals(RandomRoutingStrategy.class)) {
-                    routingStrategy = new RandomRoutingStrategy(vehicle);
+                if(stratChance.getKey().equals(RandomImpatientRoutingStrategy.class)) {
+                    routingStrategy = new RandomImpatientRoutingStrategy(vehicle);
                 } // Add other vehicle types here
 
                 return routingStrategy;

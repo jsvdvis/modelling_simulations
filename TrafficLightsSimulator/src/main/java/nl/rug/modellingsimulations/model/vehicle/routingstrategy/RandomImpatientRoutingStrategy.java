@@ -6,11 +6,11 @@ import nl.rug.modellingsimulations.utilities.RandomGenerator;
 
 import java.util.List;
 
-public class RandomRoutingStrategy implements RoutingStrategy {
+public class RandomImpatientRoutingStrategy implements RoutingStrategy {
 
     private final Vehicle vehicle;
 
-    public RandomRoutingStrategy(Vehicle vehicle) {
+    public RandomImpatientRoutingStrategy(Vehicle vehicle) {
         this.vehicle = vehicle;
     }
 
