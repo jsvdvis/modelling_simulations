@@ -3,6 +3,7 @@ package nl.rug.modellingsimulations.model.vehicle.routingstrategy;
 import nl.rug.modellingsimulations.model.navigablenode.NavigableNode;
 import nl.rug.modellingsimulations.model.navigablenode.VehicleSinkNavigableNode;
 import nl.rug.modellingsimulations.model.vehicle.Vehicle;
+import nl.rug.modellingsimulations.utilities.AllNodesUtility;
 import nl.rug.modellingsimulations.utilities.RandomGenerator;
 
 import java.util.*;
@@ -34,24 +35,8 @@ public class AStarPatientRoutingStrategy implements RoutingStrategy {
         return nodeToPick.get(vehicle.getCurrentNavigableNode());
     }
 
-    private List<NavigableNode> getAllNodes() {
-        Queue<NavigableNode> toProcess = new LinkedList<>();
-        List<NavigableNode> allNodes = new ArrayList<>();
-        toProcess.add(vehicle.getCurrentNavigableNode());
-        while(toProcess.size() > 0) {
-            NavigableNode current = toProcess.poll();
-            allNodes.add(current);
-            current.getNextNodes().stream()
-                    .filter(node -> !allNodes.contains(node))
-                    .forEach(toProcess::add);
-        }
-        return allNodes.stream()
-                .filter(node -> node instanceof VehicleSinkNavigableNode)
-                .collect(Collectors.toList());
-    }
-
     private void initializeAStar() {
-        NavigableNode goal = RandomGenerator.getInstance().getRandomOfList(getAllNodes());
+        NavigableNode goal = RandomGenerator.getInstance().getRandomOfList(AllNodesUtility.getInstance().getAllSinks());
         NavigableNode source = vehicle.getCurrentNavigableNode();
 
         openSet = new PriorityQueue<>(Comparator.comparingDouble(node -> estimatedScoreToGoal.get(node)));

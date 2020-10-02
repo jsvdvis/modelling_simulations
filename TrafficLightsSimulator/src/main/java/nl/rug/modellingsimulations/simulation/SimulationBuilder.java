@@ -3,6 +3,7 @@ package nl.rug.modellingsimulations.simulation;
 import legacyexperiment.model.junction.Junction;
 import nl.rug.modellingsimulations.model.trafficlight.TrafficLightJunction;
 import nl.rug.modellingsimulations.model.navigablenode.*;
+import nl.rug.modellingsimulations.utilities.AllNodesUtility;
 import nl.rug.modellingsimulations.utilities.Point;
 import nl.rug.modellingsimulations.utilities.SortByJunctionDirection;
 
@@ -71,6 +72,7 @@ public class SimulationBuilder {
     public void build() {
         buildRoads();
         buildExemptedLanes();
+        AllNodesUtility.getInstance().setAllNodes(nodes);
         buildJunctionStrategies();
     }
 
