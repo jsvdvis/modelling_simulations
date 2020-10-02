@@ -8,6 +8,7 @@ import org.graphstream.graph.implementations.SingleGraph;
 import org.graphstream.ui.geom.Point2;
 import org.graphstream.ui.geom.Point3;
 import org.graphstream.ui.swing.util.ImageCache;
+import org.graphstream.ui.swing_viewer.SwingViewer;
 import org.graphstream.ui.view.View;
 import org.graphstream.ui.view.Viewer;
 import org.graphstream.ui.view.camera.Camera;
@@ -98,9 +99,29 @@ public class GraphStreamMediator implements GraphMediator {
         );
         graph.setAttribute("ui.antialias");
         graph.setAttribute("ui.quality");
-        viewer = graph.display();
-        viewer.disableAutoLayout();
+//        viewer = graph.display();
+//        viewer.disableAutoLayout();
 
+        viewer = new SwingViewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
+        viewer.disableAutoLayout();
+        View view = viewer.addDefaultView(true);
+        ((Component) view).addMouseWheelListener(new MouseWheelListener() {
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                e.consume();
+                int rotation = e.getWheelRotation();
+                double factor = Math.pow(1.25, rotation);
+                Camera cam = view.getCamera();
+                double zoom = cam.getViewPercent() * factor;
+                Point2 pxCenter  = cam.transformGuToPx(cam.getViewCenter().x, cam.getViewCenter().y, 0);
+                Point3 guClicked = cam.transformPxToGu(e.getX(), e.getY());
+                double newRatioPx2Gu = cam.getMetrics().ratioPx2Gu / factor;
+                double x = guClicked.x + (pxCenter.x - e.getX()) / newRatioPx2Gu;
+                double y = guClicked.y - (pxCenter.y - e.getY()) / newRatioPx2Gu;
+                cam.setViewCenter(x, y, 0);
+                cam.setViewPercent(zoom);
+            }
+        });
     }
 
     private void createNodesAndEdges(List<NavigableNode> nodesToProcess, List<NavigableNode> processedNodes) {
