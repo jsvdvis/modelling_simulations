@@ -1,5 +1,6 @@
 package nl.rug.modellingsimulations.model.trafficlight.trafficlightstrategy;
 
+import nl.rug.modellingsimulations.config.TrafficLightConfig;
 import nl.rug.modellingsimulations.model.navigablenode.JunctionLaneNavigableNode;
 import nl.rug.modellingsimulations.model.trafficlight.TrafficLightJunction;
 
@@ -18,6 +19,13 @@ public class SensoredSidedRoundRobinTrafficLightStrategy implements TrafficLight
 
     @Override
     public void updateTrafficLights() {
+        if(timeLeft != 0) {
+            // Set the timeLeft to 0 when there are no longer any vehicles waiting
+            long vehiclesWaiting = lanePerSideQueue.getLast().stream().filter(x -> x.getTrafficLoad() > 0.00001).count();
+            if(vehiclesWaiting == 0)
+                timeLeft = 0;
+        }
+
         if(timeLeft == 0) {
             // Step 1: Get the next group of lanes on the same side
             int i = 0;
@@ -47,7 +55,7 @@ public class SensoredSidedRoundRobinTrafficLightStrategy implements TrafficLight
             lanePerSideQueue.add(lanesOnSameSideList);
 
             // Step 6: Set the delay to not change the lights
-            timeLeft = 10;
+            timeLeft = TrafficLightConfig.getMinimumTimeGreenLight();
         }
         timeLeft--;
     }

@@ -1,5 +1,6 @@
 package nl.rug.modellingsimulations.model.trafficlight.trafficlightstrategy;
 
+import nl.rug.modellingsimulations.config.TrafficLightConfig;
 import nl.rug.modellingsimulations.model.navigablenode.JunctionLaneNavigableNode;
 import nl.rug.modellingsimulations.model.trafficlight.TrafficLightJunction;
 
@@ -32,7 +33,7 @@ public class TimedSidedRoundRobinTrafficLightStrategy implements TrafficLightStr
             lanePerSideQueue.add(lanesOnSameSideList);
 
             // Step 5: Set the delay to not change the lights
-            timeLeft = 10;
+            timeLeft = TrafficLightConfig.getMinimumTimeGreenLight();
         }
         timeLeft--;
     }

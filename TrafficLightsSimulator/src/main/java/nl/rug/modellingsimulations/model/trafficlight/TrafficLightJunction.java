@@ -255,4 +255,13 @@ public abstract class TrafficLightJunction {
         this.lanes
                 .forEach(lane -> lane.setGreenLight(false));
     }
+
+    public Set<JunctionLaneNavigableNode> getLanes() {
+        return lanes;
+    }
+
+    public boolean canLaneTurnGreen(JunctionLaneNavigableNode junctionLaneNavigableNode) {
+        return exemptedLanes.get(junctionLaneNavigableNode).parallelStream()
+                .noneMatch(JunctionLaneNavigableNode::isGreenLight);
+    }
 }
