@@ -1,5 +1,6 @@
 package nl.rug.modellingsimulations.simulation;
 
+import nl.rug.modellingsimulations.config.CityGridConfig;
 import nl.rug.modellingsimulations.config.DefaultSimulationConfig;
 import nl.rug.modellingsimulations.config.SimulationConfig;
 import nl.rug.modellingsimulations.model.navigablenode.NavigableNode;
@@ -7,7 +8,8 @@ import nl.rug.modellingsimulations.model.navigablenode.VehicleSinkNavigableNode;
 import nl.rug.modellingsimulations.model.navigablenode.VehicleSourceNavigableNode;
 import nl.rug.modellingsimulations.model.trafficlight.SimpleTrafficLightJunction;
 import nl.rug.modellingsimulations.model.trafficlight.TrafficLightJunction;
-import nl.rug.modellingsimulations.model.trafficlight.trafficlightstrategy.RoundRobinTimerTrafficLightStrategy;
+import nl.rug.modellingsimulations.model.trafficlight.trafficlightstrategy.SensoredSidedRoundRobinTrafficLightStrategy;
+import nl.rug.modellingsimulations.model.trafficlight.trafficlightstrategy.TimedSidedRoundRobinTrafficLightStrategy;
 import nl.rug.modellingsimulations.model.vehicle.Vehicle;
 import nl.rug.modellingsimulations.utilities.Point;
 
@@ -27,14 +29,16 @@ public class CityGrid implements Simulation {
     }
 
     private void initializeWorld(int N) {
+        int spacing = CityGridConfig.getSpacingBetweenJunctions();
+
         SimulationBuilder builder = new SimulationBuilder(this);
         List<List<TrafficLightJunction>> junctionGrid = new ArrayList<>();
         for (int i = 0; i < N; i += 1) {
             List<TrafficLightJunction> junctionRow = new ArrayList<>();
 
             for (int j = 0; j < N; j += 1) {
-                TrafficLightJunction junction = new SimpleTrafficLightJunction(new Point(j * 4, i * 4));
-                junction.setTrafficLightStrategy(new RoundRobinTimerTrafficLightStrategy(junction));
+                TrafficLightJunction junction = new SimpleTrafficLightJunction(new Point(j * spacing, i * spacing));
+                junction.setTrafficLightStrategy(new SensoredSidedRoundRobinTrafficLightStrategy(junction));
 
                 junctionRow.add(junction);
                 if (j > 0) {
@@ -53,32 +57,31 @@ public class CityGrid implements Simulation {
 
         for (int i = 0; i < N; i += 1) {
             TrafficLightJunction bottomRowJunction = junctionGrid.get(0).get(i);
-            VehicleSinkNavigableNode bottomRowSink = new VehicleSinkNavigableNode(new Point(i * 4 - 1, -4));
-            VehicleSourceNavigableNode bottomRowSource = new VehicleSourceNavigableNode(new Point(i * 4 + 1, -4));
+            VehicleSinkNavigableNode bottomRowSink = new VehicleSinkNavigableNode(new Point(i * spacing - 1, -spacing));
+            VehicleSourceNavigableNode bottomRowSource = new VehicleSourceNavigableNode(new Point(i * spacing + 1, -spacing));
             builder.connect(bottomRowJunction, bottomRowSink);
             builder.connect(bottomRowSource, bottomRowJunction);
 
             TrafficLightJunction topRowJunction = junctionGrid.get(N - 1).get(i);
-            VehicleSinkNavigableNode topRowSink = new VehicleSinkNavigableNode(new Point(i * 4 - 1, N * 4));
-            VehicleSourceNavigableNode topRowSource = new VehicleSourceNavigableNode(new Point(i * 4 + 1, N * 4));
+            VehicleSinkNavigableNode topRowSink = new VehicleSinkNavigableNode(new Point(i * spacing - 1, N * spacing));
+            VehicleSourceNavigableNode topRowSource = new VehicleSourceNavigableNode(new Point(i * spacing + 1, N * spacing));
             builder.connect(topRowJunction, topRowSink);
             builder.connect(topRowSource, topRowJunction);
 
             TrafficLightJunction leftColumnJunction = junctionGrid.get(i).get(0);
-            VehicleSinkNavigableNode leftColumnSink = new VehicleSinkNavigableNode(new Point(-4, i * 4 - 1));
-            VehicleSourceNavigableNode leftColumnSource = new VehicleSourceNavigableNode(new Point(-4, i * 4 + 1));
+            VehicleSinkNavigableNode leftColumnSink = new VehicleSinkNavigableNode(new Point(-spacing, i * spacing - 1));
+            VehicleSourceNavigableNode leftColumnSource = new VehicleSourceNavigableNode(new Point(-spacing, i * spacing + 1));
             builder.connect(leftColumnJunction, leftColumnSink);
             builder.connect(leftColumnSource, leftColumnJunction);
 
             TrafficLightJunction rightColumnJunction = junctionGrid.get(i).get(N - 1);
-            VehicleSinkNavigableNode rightColumnSink = new VehicleSinkNavigableNode(new Point(N * 4, i * 4 - 1));
-            VehicleSourceNavigableNode rightColumnSource = new VehicleSourceNavigableNode(new Point(N * 4, i * 4 + 1));
+            VehicleSinkNavigableNode rightColumnSink = new VehicleSinkNavigableNode(new Point(N * spacing, i * spacing - 1));
+            VehicleSourceNavigableNode rightColumnSource = new VehicleSourceNavigableNode(new Point(N * spacing, i * spacing + 1));
             builder.connect(rightColumnJunction, rightColumnSink);
             builder.connect(rightColumnSource, rightColumnJunction);
         }
 
         builder.build();
-        builder.buildExemptedLanes();
 
         this.junctions = builder.getJunctions();
         this.nodes = builder.getNavigableNodes();

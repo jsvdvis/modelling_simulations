@@ -7,4 +7,5 @@ public interface TrafficLightStrategy {
 
     void updateTrafficLights();
 
+    void initialize();
 }

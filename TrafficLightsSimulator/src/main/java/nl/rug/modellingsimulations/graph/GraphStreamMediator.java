@@ -5,10 +5,16 @@ import nl.rug.modellingsimulations.simulation.Simulation;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.SingleGraph;
+import org.graphstream.ui.geom.Point2;
+import org.graphstream.ui.geom.Point3;
 import org.graphstream.ui.swing.util.ImageCache;
+import org.graphstream.ui.view.View;
 import org.graphstream.ui.view.Viewer;
+import org.graphstream.ui.view.camera.Camera;
 
 import java.awt.*;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -94,6 +100,7 @@ public class GraphStreamMediator implements GraphMediator {
         graph.setAttribute("ui.quality");
         viewer = graph.display();
         viewer.disableAutoLayout();
+
     }
 
     private void createNodesAndEdges(List<NavigableNode> nodesToProcess, List<NavigableNode> processedNodes) {

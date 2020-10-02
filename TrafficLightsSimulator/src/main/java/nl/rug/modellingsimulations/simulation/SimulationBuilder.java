@@ -1,10 +1,9 @@
 package nl.rug.modellingsimulations.simulation;
 
+import legacyexperiment.model.junction.Junction;
 import nl.rug.modellingsimulations.model.trafficlight.TrafficLightJunction;
 import nl.rug.modellingsimulations.model.navigablenode.*;
-import nl.rug.modellingsimulations.model.trafficlight.trafficlightstrategy.TrafficLightStrategy;
 import nl.rug.modellingsimulations.utilities.Point;
-import nl.rug.modellingsimulations.utilities.RandomGenerator;
 import nl.rug.modellingsimulations.utilities.SortByJunctionDirection;
 
 import java.awt.geom.Line2D;
@@ -70,84 +69,72 @@ public class SimulationBuilder {
     }
 
     public void build() {
+        buildRoads();
+        buildExemptedLanes();
+        buildJunctionStrategies();
+    }
+
+    private void buildJunctionStrategies() {
+        junctions.forEach(TrafficLightJunction::initializeStrategy);
+    }
+
+    private void buildRoads() {
         // Step 1: Build all roads with their starting- and ending points.
         Map<TrafficLightJunction, Set<RoadNavigableNode>> roadEnds = new HashMap<>();
         Map<TrafficLightJunction, Set<JunctionExitNavigableNode>> roadStarts = new HashMap<>();
 
-        this.connections.entrySet().stream().forEach(entry -> {
-            TrafficLightJunction from = entry.getKey();
-            Set<JunctionExitNavigableNode> startingRoads = new HashSet<>();
-            entry
-                    .getValue()
-                    .stream()
-                    .sorted(new SortByJunctionDirection(from))
-                    .forEachOrdered(to -> {
-                        RoadNavigableNode road = new RoadNavigableNode(
-                                (int)Math.ceil(from.getPosition().getDistance(to.getPosition()))
-                        );
-                        nodes.add(road);
-                        if (!roadEnds.containsKey(to)) {
-                            roadEnds.put(to, new HashSet<>());
-                        }
-                        roadEnds.get(to).add(road);
-
-                        JunctionExitNavigableNode start = new JunctionExitNavigableNode();
-                        nodes.add(start);
-                        start.addNextNode(road);
-                        startingRoads.add(start);
-                    });
-            roadStarts.put(from, startingRoads);
-        });
-
-        // Handle sources.
-        this.sources.entrySet().stream().forEach(entry -> {
-            VehicleSourceNavigableNode from = entry.getKey();
-            TrafficLightJunction to = entry.getValue();
-
-            RoadNavigableNode road = new RoadNavigableNode(1);
-            nodes.add(road);
-            from.addNextNode(road);
-            roadEnds.get(to).add(road);
-        });
-
-        // Handle sinks.
-        this.sinks.entrySet().stream().forEach(entry -> {
-            TrafficLightJunction from = entry.getValue();
-            VehicleSinkNavigableNode to = entry.getKey();
-
-            RoadNavigableNode road = new RoadNavigableNode(1);
-            nodes.add(road);
-            road.addNextNode(to);
-            JunctionExitNavigableNode junctionExit = new JunctionExitNavigableNode();
-            junctionExit.addNextNode(road);
-            nodes.add(junctionExit);
-            roadStarts.get(from).add(junctionExit);
-        });
+        createRoads(roadEnds, roadStarts);
 
         // Step 2: Connect all starting and ending points.
-        this.junctions
-                .stream()
-                .forEach(junction -> {
-                    roadEnds
-                            .get(junction)
-                            .stream()
-                            .forEach(road -> {
-                                roadStarts
-                                        .get(junction)
-                                        .stream()
-                                        .forEach(junctionExit -> {
-                                            JunctionLaneNavigableNode lane = new JunctionLaneNavigableNode(
-                                                    simulation.getConfig().getRandomLaneSize()
-                                            );
-                                            nodes.add(lane);
-                                            road.addNextNode(lane);
-                                            lane.addNextNode(junctionExit);
-                                            junction.addLane(lane);
-                                        });
-                            });
-                });
+        connectStartingEndpoints(roadEnds, roadStarts);
 
         // Step 3: Remove turn-backs caused by two traffic junctions that are connected both ways
+        removeTurnbacksJunctions(roadEnds, roadStarts);
+
+        // Step 4: Remove turnbacks for sources & sinks.
+        removeTurnbacksSourcesSinks();
+    }
+
+    private void removeTurnbacksSourcesSinks() {
+        this.sources.entrySet().stream().forEach(sourceEntry -> {
+            TrafficLightJunction junction = sourceEntry.getValue();
+            Set<JunctionExitNavigableNode> sinkExits = this.sinks
+                    .entrySet()
+                    .stream()
+                    .filter(sinkEntry -> sinkEntry.getValue().equals(junction))
+                    .map(sinkEntry -> (JunctionExitNavigableNode) sinkEntry
+                            .getKey()
+                            .getPreviousNodes()
+                            .iterator()
+                            .next()
+                            .getPreviousNodes()
+                            .iterator()
+                            .next()
+                    )
+                    .collect(Collectors.toSet());
+
+            Set<JunctionLaneNavigableNode> lanesToRemove = sourceEntry.getKey()
+                    .getNextNodes()
+                    .get(0)
+                    .getNextNodes()
+                    .stream()
+                    .map(lane -> (JunctionLaneNavigableNode)lane)
+                    .filter(lane -> sinkExits.contains(lane.getJunctionExitNode()))
+                    .collect(Collectors.toSet());
+            lanesToRemove.stream().forEach(lane -> {
+                        nodes.remove(lane);
+                        junction.removeLane(lane);
+                        for (Iterator<NavigableNode> iterator = lane.getNextNodes().iterator(); iterator.hasNext();) {
+                            lane.removeNextNode(iterator.next());
+                        }
+                        for (Iterator<NavigableNode> iterator = lane.getPreviousNodes().iterator(); iterator.hasNext();) {
+                            iterator.next().removeNextNode(lane);
+                        }
+                    });
+        });
+    }
+
+    private void removeTurnbacksJunctions(Map<TrafficLightJunction, Set<RoadNavigableNode>> roadEnds, Map<TrafficLightJunction, Set<JunctionExitNavigableNode>> roadStarts) {
         this.connections.keySet().stream().forEach(from -> {
             this.connections
                     .get(from)
@@ -210,43 +197,81 @@ public class SimulationBuilder {
                         });
                     });
         });
+    }
 
-        // Step 4: Remove turnbacks for sources & sinks.
-        this.sources.entrySet().stream().forEach(sourceEntry -> {
-            TrafficLightJunction junction = sourceEntry.getValue();
-            Set<JunctionExitNavigableNode> sinkExits = this.sinks
-                    .entrySet()
-                    .stream()
-                    .filter(sinkEntry -> sinkEntry.getValue().equals(junction))
-                    .map(sinkEntry -> (JunctionExitNavigableNode) sinkEntry
-                            .getKey()
-                            .getPreviousNodes()
-                            .iterator()
-                            .next()
-                            .getPreviousNodes()
-                            .iterator()
-                            .next()
-                    )
-                    .collect(Collectors.toSet());
+    private void connectStartingEndpoints(Map<TrafficLightJunction, Set<RoadNavigableNode>> roadEnds, Map<TrafficLightJunction, Set<JunctionExitNavigableNode>> roadStarts) {
+        this.junctions
+                .stream()
+                .forEach(junction -> {
+                    roadEnds
+                            .get(junction)
+                            .stream()
+                            .forEach(road -> {
+                                roadStarts
+                                        .get(junction)
+                                        .stream()
+                                        .forEach(junctionExit -> {
+                                            JunctionLaneNavigableNode lane = new JunctionLaneNavigableNode(
+                                                    simulation.getConfig().getRandomLaneSize()
+                                            );
+                                            nodes.add(lane);
+                                            road.addNextNode(lane);
+                                            lane.addNextNode(junctionExit);
+                                            junction.addLane(lane);
+                                        });
+                            });
+                });
+    }
 
-            Set<JunctionLaneNavigableNode> lanesToRemove = sourceEntry.getKey()
-                    .getNextNodes()
-                    .get(0)
-                    .getNextNodes()
+    private void createRoads(Map<TrafficLightJunction, Set<RoadNavigableNode>> roadEnds, Map<TrafficLightJunction, Set<JunctionExitNavigableNode>> roadStarts) {
+        this.connections.entrySet().stream().forEach(entry -> {
+            TrafficLightJunction from = entry.getKey();
+            Set<JunctionExitNavigableNode> startingRoads = new HashSet<>();
+            entry
+                    .getValue()
                     .stream()
-                    .map(lane -> (JunctionLaneNavigableNode)lane)
-                    .filter(lane -> sinkExits.contains(lane.getJunctionExitNode()))
-                    .collect(Collectors.toSet());
-            lanesToRemove.stream().forEach(lane -> {
-                        nodes.remove(lane);
-                        junction.removeLane(lane);
-                        for (Iterator<NavigableNode> iterator = lane.getNextNodes().iterator(); iterator.hasNext();) {
-                            lane.removeNextNode(iterator.next());
+                    .sorted(new SortByJunctionDirection(from))
+                    .forEachOrdered(to -> {
+                        RoadNavigableNode road = new RoadNavigableNode(
+                                (int)Math.ceil(from.getPosition().getDistance(to.getPosition()))
+                        );
+                        nodes.add(road);
+                        if (!roadEnds.containsKey(to)) {
+                            roadEnds.put(to, new HashSet<>());
                         }
-                        for (Iterator<NavigableNode> iterator = lane.getPreviousNodes().iterator(); iterator.hasNext();) {
-                            iterator.next().removeNextNode(lane);
-                        }
+                        roadEnds.get(to).add(road);
+
+                        JunctionExitNavigableNode start = new JunctionExitNavigableNode();
+                        nodes.add(start);
+                        start.addNextNode(road);
+                        startingRoads.add(start);
                     });
+            roadStarts.put(from, startingRoads);
+        });
+
+        // Handle sources.
+        this.sources.entrySet().stream().forEach(entry -> {
+            VehicleSourceNavigableNode from = entry.getKey();
+            TrafficLightJunction to = entry.getValue();
+
+            RoadNavigableNode road = new RoadNavigableNode(1);
+            nodes.add(road);
+            from.addNextNode(road);
+            roadEnds.get(to).add(road);
+        });
+
+        // Handle sinks.
+        this.sinks.entrySet().stream().forEach(entry -> {
+            TrafficLightJunction from = entry.getValue();
+            VehicleSinkNavigableNode to = entry.getKey();
+
+            RoadNavigableNode road = new RoadNavigableNode(1);
+            nodes.add(road);
+            road.addNextNode(to);
+            JunctionExitNavigableNode junctionExit = new JunctionExitNavigableNode();
+            junctionExit.addNextNode(road);
+            nodes.add(junctionExit);
+            roadStarts.get(from).add(junctionExit);
         });
     }
 

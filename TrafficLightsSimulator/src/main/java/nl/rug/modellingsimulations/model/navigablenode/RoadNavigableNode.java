@@ -57,7 +57,9 @@ public class RoadNavigableNode extends VehicleBuffer {
                 .collect(Collectors.toList());
         Point avgNextNodes = Point.avgPoint(nextPoints);
         Point avgPrevNodes = Point.avgPoint(prevPoints);
-        return avgNextNodes.getHalfWay(avgPrevNodes);
+        double distanceBetweenNodes = avgNextNodes.getDistance(avgPrevNodes);
+        return avgPrevNodes.moveTowards(avgNextNodes, 0.75 * distanceBetweenNodes);
+        //return avgNextNodes.getHalfWay(avgPrevNodes); // OLD: roads halfway between nodes
     }
 
 }

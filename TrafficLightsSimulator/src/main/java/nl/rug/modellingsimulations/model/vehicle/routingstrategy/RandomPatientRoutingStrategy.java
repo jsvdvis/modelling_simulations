@@ -20,7 +20,7 @@ public class RandomPatientRoutingStrategy implements RoutingStrategy {
         List<NavigableNode> possibleNodes = vehicle.getCurrentNavigableNode().getNextNodes();
 
         // If we previously picked a next node to go to, we will stick with our choice.
-        if(nextNode != null && !possibleNodes.contains(nextNode))
+        if(nextNode == null || !possibleNodes.contains(nextNode))
             // We have not picked a node yet, so now we pick one at random and stick to it.
             nextNode = RandomGenerator.getInstance().getRandomOfList(possibleNodes);
 

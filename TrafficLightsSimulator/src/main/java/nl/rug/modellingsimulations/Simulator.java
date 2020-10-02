@@ -9,11 +9,15 @@ import nl.rug.modellingsimulations.model.navigablenode.VehicleSourceNavigableNod
 import nl.rug.modellingsimulations.model.vehicle.AbstractVehicle;
 import nl.rug.modellingsimulations.model.vehicle.SlowVehicle;
 import nl.rug.modellingsimulations.model.vehicle.Vehicle;
+import nl.rug.modellingsimulations.model.vehicle.routingstrategy.AStarPatientRoutingStrategy;
 import nl.rug.modellingsimulations.model.vehicle.routingstrategy.RandomImpatientRoutingStrategy;
+import nl.rug.modellingsimulations.model.vehicle.routingstrategy.RandomPatientRoutingStrategy;
 import nl.rug.modellingsimulations.model.vehicle.routingstrategy.RoutingStrategy;
 import nl.rug.modellingsimulations.simulation.Simulation;
 import nl.rug.modellingsimulations.utilities.RandomGenerator;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -30,13 +34,18 @@ public class Simulator {
         GraphMediator graphMediator = new GraphStreamMediator(simulation);
         graphMediator.createGraph();
 
+        long timer;
         while(true) {
+            timer = System.currentTimeMillis();
             this.simulation = step();
             graphMediator.updateView();
-            graphMediator.updateView();
+            timer = System.currentTimeMillis() - timer;
+            System.out.println("Iteration: " + currentIteration + " completed in: " + timer + " milliseconds.");
 
             try {
-                Thread.sleep(SimulatorConfig.getSleepBetweenStepMs());
+                timer = SimulatorConfig.getSleepBetweenStepMs() - timer; // Time to sleep
+                if(timer > 0)
+                    Thread.sleep(timer);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -188,7 +197,12 @@ public class Simulator {
                 RoutingStrategy routingStrategy = null;
                 if(stratChance.getKey().equals(RandomImpatientRoutingStrategy.class)) {
                     routingStrategy = new RandomImpatientRoutingStrategy(vehicle);
-                } // Add other vehicle types here
+                }  else if(stratChance.getKey().equals(RandomPatientRoutingStrategy.class)) {
+                    routingStrategy = new RandomPatientRoutingStrategy(vehicle);
+                } else if(stratChance.getKey().equals(AStarPatientRoutingStrategy.class)) {
+                    routingStrategy = new AStarPatientRoutingStrategy(vehicle);
+                }
+                // Add other vehicle strats here
 
                 return routingStrategy;
             }

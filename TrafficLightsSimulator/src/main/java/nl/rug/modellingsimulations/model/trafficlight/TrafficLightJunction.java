@@ -232,4 +232,27 @@ public abstract class TrafficLightJunction {
     public void setTrafficLightStrategy(TrafficLightStrategy trafficLightStrategy) {
         this.trafficLightStrategy = trafficLightStrategy;
     }
+
+    public void initializeStrategy() {
+        this.trafficLightStrategy.initialize();
+    }
+
+    public List<List<JunctionLaneNavigableNode>> getLanesSameJunctionSideGroups() {
+        return this.lanes.stream()
+                .map(this::getJunctionLaneOrExitFromSameSide)
+                .map(listLaneExit ->
+                        listLaneExit
+                                .stream()
+                                .filter(laneOrExit -> laneOrExit instanceof JunctionLaneNavigableNode)
+                                .map(x -> (JunctionLaneNavigableNode) x)
+                                .collect(Collectors.toList())
+                )
+                .distinct()
+                .collect(Collectors.toList());
+    }
+
+    public void setAllTrafficLightsToRed() {
+        this.lanes
+                .forEach(lane -> lane.setGreenLight(false));
+    }
 }
