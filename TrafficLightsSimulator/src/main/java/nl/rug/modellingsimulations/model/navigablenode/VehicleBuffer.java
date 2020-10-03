@@ -18,10 +18,6 @@ public abstract class VehicleBuffer implements NavigableNode {
     protected VehicleBuffer(int size) {
         this.size = size;
         this.vehicleSlots = HashBiMap.create(this.size);
-
-//        // Initialize buffer with nulls
-//        for(int i = 0; i < this.size; i++)
-//            this.vehicleSlots.put(i, null);
     }
 
     /**
@@ -43,9 +39,16 @@ public abstract class VehicleBuffer implements NavigableNode {
         // If we are already in the buffer and in the last slot, we check if the next node has space for us!
         if(isExitingBuffer(vehicle)) {
             // If we are waiting before a traffic light, it must be green in order to be allowed to move
-            if(this instanceof JunctionLaneNavigableNode
-                && !((JunctionLaneNavigableNode) this).isGreenLight()) {
-                return false;
+            if (this instanceof JunctionLaneNavigableNode) {
+                JunctionLaneNavigableNode currentNode = (JunctionLaneNavigableNode) this;
+                if (!currentNode.isGreenLight()) {
+                    return false;
+                }
+                boolean canMovePosition = vehicle.getNextNavigableNode().canMovePosition(vehicle);
+                if (canMovePosition) {
+                    currentNode.getJunction().registerVehicleMovingThroughJunction();
+                }
+                return canMovePosition;
             }
 
             // This is not a traffic light. We can move as long as the next node's slot is free

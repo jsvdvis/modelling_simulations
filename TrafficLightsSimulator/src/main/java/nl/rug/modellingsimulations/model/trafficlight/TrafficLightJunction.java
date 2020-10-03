@@ -1,6 +1,7 @@
 package nl.rug.modellingsimulations.model.trafficlight;
 
 import nl.rug.modellingsimulations.config.JunctionSpacingConfig;
+import nl.rug.modellingsimulations.metrics.TrafficLightJunctionThroughput;
 import nl.rug.modellingsimulations.model.navigablenode.JunctionExitNavigableNode;
 import nl.rug.modellingsimulations.model.navigablenode.JunctionLaneNavigableNode;
 import nl.rug.modellingsimulations.model.navigablenode.NavigableNode;
@@ -23,6 +24,7 @@ public abstract class TrafficLightJunction {
     private Map<JunctionLaneNavigableNode, Set<JunctionLaneNavigableNode>> exemptedLanes = new HashMap<>();
     private TrafficLightStrategy trafficLightStrategy;
     private final Point position;
+    private TrafficLightJunctionThroughput throughputMeasurer;
 
     public TrafficLightJunction(Point position) {
         this.lanes = new HashSet<>();
@@ -142,15 +144,6 @@ public abstract class TrafficLightJunction {
                             previousJunctionAngle.getRelativeAngle(vLane1),
                             previousJunctionAngle.getRelativeAngle(vLane2)
                     );
-
-//                    double angleLane1WithAfterJunction = getPosition().getAngle(lane1.getJunctionExitNode()
-//                            .getNextNodeAfterRoad()
-//                            .getPosition(false));
-//                    double angleLane2WithAfterJunction = getPosition().getAngle(lane2.getJunctionExitNode()
-//                            .getNextNodeAfterRoad()
-//                            .getPosition(false));
-//                    System.out.println(angleLane1WithAfterJunction + " " + angleLane2WithAfterJunction);
-//                    return Double.compare(angleLane2WithAfterJunction, angleLane1WithAfterJunction);
                 })
                 .forEach(orderedNodes::add);
 
@@ -263,5 +256,15 @@ public abstract class TrafficLightJunction {
     public boolean canLaneTurnGreen(JunctionLaneNavigableNode junctionLaneNavigableNode) {
         return exemptedLanes.get(junctionLaneNavigableNode).parallelStream()
                 .noneMatch(JunctionLaneNavigableNode::isGreenLight);
+    }
+
+    public void setThroughputMeasurer(TrafficLightJunctionThroughput throughputMeasurer) {
+        this.throughputMeasurer = throughputMeasurer;
+    }
+
+    public void registerVehicleMovingThroughJunction() {
+        if (this.throughputMeasurer != null) {
+            this.throughputMeasurer.increaseThroughput();
+        }
     }
 }

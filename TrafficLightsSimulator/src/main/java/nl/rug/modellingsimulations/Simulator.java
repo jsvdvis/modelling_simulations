@@ -3,6 +3,7 @@ package nl.rug.modellingsimulations;
 import nl.rug.modellingsimulations.config.SimulatorConfig;
 import nl.rug.modellingsimulations.graph.GraphMediator;
 import nl.rug.modellingsimulations.graph.GraphStreamMediator;
+import nl.rug.modellingsimulations.metrics.*;
 import nl.rug.modellingsimulations.model.trafficlight.TrafficLightJunction;
 import nl.rug.modellingsimulations.model.navigablenode.VehicleSinkNavigableNode;
 import nl.rug.modellingsimulations.model.navigablenode.VehicleSourceNavigableNode;
@@ -16,15 +17,15 @@ import nl.rug.modellingsimulations.model.vehicle.routingstrategy.RoutingStrategy
 import nl.rug.modellingsimulations.simulation.Simulation;
 import nl.rug.modellingsimulations.utilities.RandomGenerator;
 
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class Simulator {
 
     Simulation simulation;
     int currentIteration = 0;
+    private StoppedVehicles stoppedVehicles;
 
     public Simulator(Simulation simulation) {
         this.simulation = simulation;
@@ -34,10 +35,24 @@ public class Simulator {
         GraphMediator graphMediator = new GraphStreamMediator(simulation);
         graphMediator.createGraph();
 
+        // Register metrics-measurers
+        MetricsStepResultSaver throughputPrinter = new CsvFileSaver("throughput");
+        TrafficLightJunctionThroughput junctionThroughput = new TrafficLightJunctionThroughput(throughputPrinter);
+        simulation.getTrafficLightJunctions().forEach(junction -> junction.setThroughputMeasurer(junctionThroughput));
+
+        MetricsStepResultSaver stoppedVehiclePrinter = new CsvFileSaver("stopped");
+        stoppedVehicles = new StoppedVehicles(stoppedVehiclePrinter);
+
         long timer;
         while(true) {
             timer = System.currentTimeMillis();
+
+            junctionThroughput.initSimulationStep();
+            stoppedVehicles.initSimulationStep();
             this.simulation = step();
+            junctionThroughput.finishSimulationStep(this.simulation);
+            stoppedVehicles.finishSimulationStep(this.simulation);
+
             graphMediator.updateView();
             timer = System.currentTimeMillis() - timer;
             System.out.println("Iteration: " + currentIteration + " completed in: " + timer + " milliseconds.");
@@ -91,7 +106,7 @@ public class Simulator {
         // STEP 5: Create vehicles at the sources
         generateVehiclesAtSources(-1);
 
-        Set<Vehicle> canMoveAfterIteration = new HashSet<>();
+        Set<Vehicle> canMoveAfterIteration = Collections.newSetFromMap(new ConcurrentHashMap<Vehicle, Boolean>());
         // STEP 6: As long as vehicles can still make moves, do the following
         while(vehicleMovesAvailable.size() > 0) {
 
@@ -140,6 +155,14 @@ public class Simulator {
 
         // Step 7: All vehicles that end up with an empty spot before them will accelerate in the next phase
         canMoveAfterIteration.forEach(Vehicle::tryAccelerate);
+
+
+        // MEASUREMENT STEP: Count number of vehicles that have a current speed of 0
+        stoppedVehicles.setStoppedVehicleCount(
+                (int)simulation.getVehicles().stream().filter(vehicle ->
+                        vehicle.getCurrentSpeed() > 0
+                ).count()
+        );
 
         return simulation;
     }
