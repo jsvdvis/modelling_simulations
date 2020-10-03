@@ -38,10 +38,10 @@ public class Simulator {
         while(true) {
             timer = System.currentTimeMillis();
             this.simulation = step();
-            graphMediator.updateView();
             timer = System.currentTimeMillis() - timer;
             System.out.println("Iteration: " + currentIteration + " completed in: " + timer + " milliseconds.");
 
+            // Sleeping before the view on purpose, so the view is always being updated after the same interval amount!
             try {
                 timer = SimulatorConfig.getSleepBetweenStepMs() - timer; // Time to sleep
                 if(timer > 0)
@@ -49,6 +49,8 @@ public class Simulator {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+
+            graphMediator.updateView();
             currentIteration += 1;
         }
     }
