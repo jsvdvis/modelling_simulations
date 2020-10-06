@@ -22,4 +22,7 @@ public interface Vehicle {
 
     void setRoutingStrategy(RoutingStrategy routingStrategy);
     void setSpeed(int maxSpeed);
+
+    void incrementWaitingTime();
+    int getWaitingTime();
 }

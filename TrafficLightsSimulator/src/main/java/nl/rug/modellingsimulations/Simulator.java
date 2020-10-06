@@ -26,6 +26,7 @@ public class Simulator {
     Simulation simulation;
     int currentIteration = 0;
     private StoppedVehicles stoppedVehicles;
+    private VehicleWaitingTime vehicleWaitingTime;
 
     public Simulator(Simulation simulation) {
         this.simulation = simulation;
@@ -43,15 +44,20 @@ public class Simulator {
         MetricsStepResultSaver stoppedVehiclePrinter = new CsvFileSaver("stopped");
         stoppedVehicles = new StoppedVehicles(stoppedVehiclePrinter);
 
+        MetricsStepResultSaver vehicleWaitingTimePrinter = new CsvFileSaver("waiting_time");
+        vehicleWaitingTime = new VehicleWaitingTime(vehicleWaitingTimePrinter);
+
         long timer;
         while(true) {
             timer = System.currentTimeMillis();
 
             junctionThroughput.initSimulationStep();
             stoppedVehicles.initSimulationStep();
+            vehicleWaitingTime.initSimulationStep();
             this.simulation = step();
             junctionThroughput.finishSimulationStep(this.simulation);
             stoppedVehicles.finishSimulationStep(this.simulation);
+            vehicleWaitingTime.finishSimulationStep(this.simulation);
 
             timer = System.currentTimeMillis() - timer;
             System.out.println("Iteration: " + currentIteration + " completed in: " + timer + " milliseconds.");
@@ -78,11 +84,12 @@ public class Simulator {
      * 5. Create vehicles at the sources if chance allows
      * 6. As long as vehicles can still make moves, do the following
      * 6a. Put Vehicles with 0 moves left on a list to accelerate, if their next movement is not hindered
-     * 6b. All vehicles that have moves remaining but CANNOT make that move, have to break!
-     * 6c. Get a list of movable vehicles
-     * 6d. Move the vehicle, and reduce the maximum amount of movements remaining
-     * 6e. For each vehicle sink, remove the vehicle, if any
-     * 6f. Replenish the vehicle sources, if required
+     * 6b. Increment waiting time of Vehicles with 0 moves left and currentSpeed 0 that cannot accelerate.
+     * 6c. All vehicles that have moves remaining but CANNOT make that move, have to break!
+     * 6d. Get a list of movable vehicles
+     * 6e. Move the vehicle, and reduce the maximum amount of movements remaining
+     * 6f. For each vehicle sink, remove the vehicle, if any
+     * 6g. Replenish the vehicle sources, if required
      * 7. Accelerate all vehicles that did not brake during this step and can still make a move
      */
     private Simulation step() {
@@ -120,19 +127,29 @@ public class Simulator {
                         canMoveAfterIteration.add(vehicle.getKey());
                     });
 
-            // STEP 6b: All vehicles that have moves remaining but CANNOT make that move, have to break!
+            // STEP 6b: Increment waiting time of Vehicles that have 0 moves left, cannot accelerate and 0 currentSpeed
+            vehicleMovesAvailable.entrySet()
+                    .parallelStream()
+                    .filter(
+                            x -> x.getValue() == 0
+                            && x.getKey().getCurrentSpeed() == 0
+                            && !canMoveAfterIteration.contains(x.getKey())
+                    )
+                    .forEach(vehicle -> vehicle.getKey().incrementWaitingTime());
+
+            // STEP 6c: All vehicles that have moves remaining but CANNOT make that move, have to break!
             vehicleMovesAvailable.entrySet()
                     .parallelStream()
                     .filter(x -> x.getValue() > 0 && !x.getKey().canMakeMove())
                     .forEach(x -> x.getKey().fullBrake());
 
-            // STEP 6c: Get a list of movable vehicles, since we want to perform all movements at the same time
+            // STEP 6d: Get a list of movable vehicles, since we want to perform all movements at the same time
             //   in order to avoid race conditions (only move available after the one in front moved)
             vehicleMovesAvailable = vehicleMovesAvailable.entrySet().parallelStream()
                     .filter(vehicleMoves -> vehicleMoves.getValue() > 0 && vehicleMoves.getKey().canMakeMove())
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-            // STEP 6d: Move the vehicle, and reduce the maximum amount of movements remaining!
+            // STEP 6e: Move the vehicle, and reduce the maximum amount of movements remaining!
             vehicleMovesAvailable = vehicleMovesAvailable.entrySet().stream()
                     .map(vehicleMoves -> {
                         try {
@@ -145,12 +162,12 @@ public class Simulator {
                     })
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-            // Step 6e: Remove all vehicles that are in the sink, if any
+            // Step 6f: Remove all vehicles that are in the sink, if any
             vehicleMovesAvailable.keySet().stream()
                     .filter(vehicle -> vehicle.getCurrentNavigableNode() instanceof VehicleSinkNavigableNode)
                     .forEach(vehicle -> simulation.removeVehicle(vehicle));
 
-            // STEP 6f: Replenish the sources with new vehicles, if necessary
+            // STEP 6g: Replenish the sources with new vehicles, if necessary
             int maxSpeed = vehicleMovesAvailable.values().stream().mapToInt(x -> x).max().orElse(-1);
             generateVehiclesAtSources(maxSpeed);
         }
@@ -159,11 +176,14 @@ public class Simulator {
         canMoveAfterIteration.forEach(Vehicle::tryAccelerate);
 
 
-        // MEASUREMENT STEP: Count number of vehicles that have a current speed of 0
+        // MEASUREMENT STEP
         stoppedVehicles.setStoppedVehicleCount(
                 (int)simulation.getVehicles().stream().filter(vehicle ->
                         vehicle.getCurrentSpeed() > 0
                 ).count()
+        );
+        simulation.getVehicles().forEach(vehicle ->
+                vehicleWaitingTime.addVehicleWaitingTime(vehicle.getWaitingTime())
         );
 
         return simulation;

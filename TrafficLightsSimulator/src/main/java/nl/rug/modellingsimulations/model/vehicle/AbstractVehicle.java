@@ -9,6 +9,7 @@ public abstract class AbstractVehicle implements Vehicle {
     protected int currentSpeed;
     protected NavigableNode navigableNode;
     protected RoutingStrategy routingStrategy;
+    protected int waitingTime = 0;
 
     protected AbstractVehicle(NavigableNode navigableNode) {
         this.currentSpeed = getMaximumSpeed();
@@ -57,6 +58,9 @@ public abstract class AbstractVehicle implements Vehicle {
     @Override
     public void tryAccelerate() {
         this.currentSpeed = Math.min(this.getMaximumSpeed(), this.getCurrentSpeed() + 1);
+        if (this.currentSpeed > 0) {
+            this.waitingTime = 0;
+        }
     }
 
     @Override
@@ -73,4 +77,13 @@ public abstract class AbstractVehicle implements Vehicle {
         this.currentSpeed = newSpeed;
     }
 
+    @Override
+    public void incrementWaitingTime() {
+        this.waitingTime += 1;
+    }
+
+    @Override
+    public int getWaitingTime() {
+        return this.waitingTime;
+    }
 }

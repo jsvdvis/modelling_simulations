@@ -11,9 +11,9 @@ public class Main {
         System.setProperty("org.graphstream.ui", "swing");
 
         //Simulation simulation = new SimpleWorld();
-//        Simulation simulation = new CityGrid(6);
+        Simulation simulation = new CityGrid(6);
 
-        Simulation simulation = new TwoWay(6);
+//        Simulation simulation = new TwoWay(6);
 
         Simulator simulator = new Simulator(simulation);
         simulator.run();
