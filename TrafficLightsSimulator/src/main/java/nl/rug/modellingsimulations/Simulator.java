@@ -27,14 +27,18 @@ public class Simulator {
     int currentIteration = 0;
     private StoppedVehicles stoppedVehicles;
     private VehicleWaitingTime vehicleWaitingTime;
+    private boolean shouldDisplay = true;
 
     public Simulator(Simulation simulation) {
         this.simulation = simulation;
     }
 
     public void run() {
-        GraphMediator graphMediator = new GraphStreamMediator(simulation);
-        graphMediator.createGraph();
+        GraphMediator graphMediator = null;
+        if (shouldDisplay) {
+            graphMediator = new GraphStreamMediator(simulation);
+            graphMediator.createGraph();
+        }
 
         // Register metrics-measurers
         MetricsStepResultSaver throughputPrinter = new CsvFileSaver("throughput");
@@ -71,7 +75,9 @@ public class Simulator {
                 e.printStackTrace();
             }
 
-            graphMediator.updateView();
+            if (shouldDisplay && graphMediator != null) {
+                graphMediator.updateView();
+            }
             currentIteration += 1;
         }
     }
@@ -255,4 +261,7 @@ public class Simulator {
         return null;
     }
 
+    public void hideDisplay() {
+        this.shouldDisplay = false;
+    }
 }

@@ -51,7 +51,7 @@ public class SensoredRoundRobinTrafficLightStrategy implements TrafficLightStrat
 
         // STEP 5: For all red traffic lights with waiting vehicles, turn green if allowed
         for (JunctionLaneNavigableNode lane : new ArrayList<>(redLightsQueue)) {
-            if (lane.getTrafficLoad() > 0.00001) {
+            if (lane.getTrafficLoad() > 0.00001 && trafficLightJunction.canLaneTurnGreen(lane)) {
                 redLightsQueue.remove(lane);
                 lane.setGreenLight(true);
                 greenLanesTime.put(lane, TrafficLightConfig.getMinimumTimeGreenLight());
