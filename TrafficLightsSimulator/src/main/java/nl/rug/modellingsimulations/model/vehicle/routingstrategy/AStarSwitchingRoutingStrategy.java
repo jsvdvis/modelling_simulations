@@ -36,7 +36,7 @@ public class AStarSwitchingRoutingStrategy implements RoutingStrategy {
         return this.nodeToPick.get(vehicle.getCurrentNavigableNode());
     }
 
-    public NavigableNode updateImpatience() {
+    public void updateImpatience() {
         NavigableNode currentNode = vehicle.getCurrentNavigableNode();
         NavigableNode nextNode = getNextNode();
 
@@ -67,7 +67,6 @@ public class AStarSwitchingRoutingStrategy implements RoutingStrategy {
         } else {
             impatienceTurnsWaiting = 0;
         }
-        return nextNode;
     }
 
     private void initializeAStar() {
