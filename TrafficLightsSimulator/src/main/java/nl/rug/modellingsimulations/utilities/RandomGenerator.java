@@ -23,6 +23,8 @@ public class RandomGenerator {
     }
 
     public int getIntegerBetween(int from, int to) {
+        if(from == to)
+            return from;
         return from + random.nextInt(to - from);
     }
 

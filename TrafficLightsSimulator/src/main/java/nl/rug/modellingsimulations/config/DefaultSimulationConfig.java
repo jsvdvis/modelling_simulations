@@ -7,7 +7,7 @@ public class DefaultSimulationConfig implements SimulationConfig {
     private static final RandomGenerator random = RandomGenerator.getInstance();
     private static DefaultSimulationConfig instance = null;
 
-    private static final int JUNCTION_LANE_SIZE_MIN = 1;
+    private static final int JUNCTION_LANE_SIZE_MIN = 6;
     private static final int JUNCTION_LANE_SIZE_MAX = 6;
 
     private DefaultSimulationConfig() {}
