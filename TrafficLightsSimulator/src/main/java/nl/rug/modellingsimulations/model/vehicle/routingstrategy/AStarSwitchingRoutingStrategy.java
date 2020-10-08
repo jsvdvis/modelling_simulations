@@ -28,13 +28,17 @@ public class AStarSwitchingRoutingStrategy implements RoutingStrategy {
     }
 
     @Override
-    public NavigableNode pickNextNode() {
+    public NavigableNode getNextNode() {
         if(!nodeToPick.containsKey(vehicle.getCurrentNavigableNode())) {
             initializeAStar();
         }
 
+        return this.nodeToPick.get(vehicle.getCurrentNavigableNode());
+    }
+
+    public NavigableNode updateImpatience() {
         NavigableNode currentNode = vehicle.getCurrentNavigableNode();
-        NavigableNode nextNode = nodeToPick.get(currentNode);
+        NavigableNode nextNode = getNextNode();
 
         // If the next node is full, impatience starts to build up!
         if(currentNode instanceof RoadNavigableNode &&
@@ -63,7 +67,6 @@ public class AStarSwitchingRoutingStrategy implements RoutingStrategy {
         } else {
             impatienceTurnsWaiting = 0;
         }
-
         return nextNode;
     }
 

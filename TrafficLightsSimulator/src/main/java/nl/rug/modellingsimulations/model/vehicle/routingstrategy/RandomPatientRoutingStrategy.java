@@ -16,7 +16,7 @@ public class RandomPatientRoutingStrategy implements RoutingStrategy {
     }
 
     @Override
-    public NavigableNode pickNextNode() {
+    public NavigableNode getNextNode() {
         List<NavigableNode> possibleNodes = vehicle.getCurrentNavigableNode().getNextNodes();
 
         // If we previously picked a next node to go to, we will stick with our choice.

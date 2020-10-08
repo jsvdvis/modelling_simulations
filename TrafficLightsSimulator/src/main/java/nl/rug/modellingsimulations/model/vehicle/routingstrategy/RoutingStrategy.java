@@ -5,6 +5,6 @@ import nl.rug.modellingsimulations.model.vehicle.Vehicle;
 
 public interface RoutingStrategy {
 
-    NavigableNode pickNextNode();
+    NavigableNode getNextNode();
 
 }

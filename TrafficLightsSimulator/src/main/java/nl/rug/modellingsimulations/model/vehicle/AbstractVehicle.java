@@ -1,6 +1,5 @@
 package nl.rug.modellingsimulations.model.vehicle;
 
-import nl.rug.modellingsimulations.model.navigablenode.JunctionLaneNavigableNode;
 import nl.rug.modellingsimulations.model.navigablenode.NavigableNode;
 import nl.rug.modellingsimulations.model.vehicle.routingstrategy.RoutingStrategy;
 
@@ -70,7 +69,7 @@ public abstract class AbstractVehicle implements Vehicle {
 
     @Override
     public NavigableNode getNextNavigableNode() {
-        return this.getRoutingStrategy().pickNextNode();
+        return this.getRoutingStrategy().getNextNode();
     }
 
     public void setSpeed(int newSpeed) {

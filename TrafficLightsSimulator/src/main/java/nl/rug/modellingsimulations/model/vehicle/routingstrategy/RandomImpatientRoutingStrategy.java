@@ -15,7 +15,7 @@ public class RandomImpatientRoutingStrategy implements RoutingStrategy {
     }
 
     @Override
-    public NavigableNode pickNextNode() {
+    public NavigableNode getNextNode() {
         List<NavigableNode> possibleNodes = vehicle.getCurrentNavigableNode().getNextNodes();
         return RandomGenerator.getInstance().getRandomOfList(possibleNodes);
     }

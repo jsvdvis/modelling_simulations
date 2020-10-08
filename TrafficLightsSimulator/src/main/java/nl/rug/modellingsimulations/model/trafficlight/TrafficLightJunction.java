@@ -255,7 +255,9 @@ public abstract class TrafficLightJunction {
 
     public boolean canLaneTurnGreen(JunctionLaneNavigableNode junctionLaneNavigableNode) {
         return exemptedLanes.get(junctionLaneNavigableNode).parallelStream()
-                .noneMatch(JunctionLaneNavigableNode::isGreenLight);
+                .noneMatch(JunctionLaneNavigableNode::isGreenLight)
+                && (junctionLaneNavigableNode.getJunctionExitNode().getTrafficLoad() <= 0.999 ||
+                junctionLaneNavigableNode.getJunctionExitNode().getNextNodeAfterRoad().getTrafficLoad() <= 0.999);
     }
 
     public void setThroughputMeasurer(TrafficLightJunctionThroughput throughputMeasurer) {
