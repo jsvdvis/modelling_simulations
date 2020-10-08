@@ -8,8 +8,7 @@ import nl.rug.modellingsimulations.model.navigablenode.VehicleSinkNavigableNode;
 import nl.rug.modellingsimulations.model.navigablenode.VehicleSourceNavigableNode;
 import nl.rug.modellingsimulations.model.trafficlight.SimpleTrafficLightJunction;
 import nl.rug.modellingsimulations.model.trafficlight.TrafficLightJunction;
-import nl.rug.modellingsimulations.model.trafficlight.trafficlightstrategy.SensoredRoundRobinTrafficLightStrategy;
-import nl.rug.modellingsimulations.model.trafficlight.trafficlightstrategy.TimedSidedRoundRobinTrafficLightStrategy;
+import nl.rug.modellingsimulations.model.trafficlight.trafficlightstrategy.SensoredFifoTrafficLightStrategy;
 import nl.rug.modellingsimulations.model.vehicle.Vehicle;
 import nl.rug.modellingsimulations.utilities.Point;
 
@@ -38,7 +37,7 @@ public class TwoWay implements Simulation {
             TrafficLightJunction junction = new SimpleTrafficLightJunction(
                     new Point(i * spacing, 0)
             );
-            junction.setTrafficLightStrategy(new SensoredRoundRobinTrafficLightStrategy(junction));
+            junction.setTrafficLightStrategy(new SensoredFifoTrafficLightStrategy(junction));
             junctions.add(junction);
 
             if (i > 0) {

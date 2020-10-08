@@ -19,7 +19,7 @@ public class CsvFileSaver implements MetricsStepResultSaver {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm:ss");
 
             this.writer = new BufferedWriter(new FileWriter(
-                    identifier + "_" + dateTime.format(formatter) + ".csv",
+                    identifier + "_" + dateTime.format(formatter).replace(':', '-') + ".csv",
                     true
             ));
 

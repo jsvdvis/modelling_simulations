@@ -2,19 +2,19 @@ package nl.rug.modellingsimulations.model.trafficlight.trafficlightstrategy;
 
 import nl.rug.modellingsimulations.config.TrafficLightConfig;
 import nl.rug.modellingsimulations.model.navigablenode.JunctionLaneNavigableNode;
+import nl.rug.modellingsimulations.model.navigablenode.VehicleBuffer;
 import nl.rug.modellingsimulations.model.trafficlight.TrafficLightJunction;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-public class SensoredRoundRobinTrafficLightStrategy implements TrafficLightStrategy {
+public class RadarWeightedTrafficLightStrategy implements TrafficLightStrategy {
 
     private final TrafficLightJunction trafficLightJunction;
-    private final LinkedHashSet<JunctionLaneNavigableNode> redLightsQueue = new LinkedHashSet<>();
+    private List<JunctionLaneNavigableNode> redLightsQueue = new ArrayList<>();
     private Map<JunctionLaneNavigableNode, Integer> greenLanesTime = new HashMap<>();
 
-    public SensoredRoundRobinTrafficLightStrategy(TrafficLightJunction trafficLightJunction) {
+    public RadarWeightedTrafficLightStrategy(TrafficLightJunction trafficLightJunction) {
         this.trafficLightJunction = trafficLightJunction;
     }
 
@@ -40,14 +40,13 @@ public class SensoredRoundRobinTrafficLightStrategy implements TrafficLightStrat
             }
         }
 
-        // STEP 4: Put red traffic lights with no traffic at the end of the queue,
-        // such that longer waiting lights get processed first
-        for (JunctionLaneNavigableNode junctionLaneNavigableNode : new ArrayList<>(redLightsQueue)) {
-            if (junctionLaneNavigableNode.getTrafficLoad() < 0.0001) {
-                redLightsQueue.remove(junctionLaneNavigableNode);
-                redLightsQueue.add(junctionLaneNavigableNode);
-            }
-        }
+        // STEP 4: Sort all red lights based on the amount of vehicles that are waiting
+        // -- A lane with more vehicles will always take precedence over a more quiet lane
+        // NOTE: we are sorting every single time, because we cannot use a comparator since the ordering changes every
+        //  iteration.
+        redLightsQueue = redLightsQueue.stream()
+                .sorted(Comparator.comparingDouble(VehicleBuffer::getTrafficLoad))
+                .collect(Collectors.toList());
 
         // STEP 5: For all red traffic lights with waiting vehicles, turn green if allowed
         for (JunctionLaneNavigableNode lane : new ArrayList<>(redLightsQueue)) {

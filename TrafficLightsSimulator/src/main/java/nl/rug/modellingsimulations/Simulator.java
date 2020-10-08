@@ -7,9 +7,7 @@ import nl.rug.modellingsimulations.metrics.*;
 import nl.rug.modellingsimulations.model.trafficlight.TrafficLightJunction;
 import nl.rug.modellingsimulations.model.navigablenode.VehicleSinkNavigableNode;
 import nl.rug.modellingsimulations.model.navigablenode.VehicleSourceNavigableNode;
-import nl.rug.modellingsimulations.model.vehicle.AbstractVehicle;
-import nl.rug.modellingsimulations.model.vehicle.SlowVehicle;
-import nl.rug.modellingsimulations.model.vehicle.Vehicle;
+import nl.rug.modellingsimulations.model.vehicle.*;
 import nl.rug.modellingsimulations.model.vehicle.routingstrategy.AStarPatientRoutingStrategy;
 import nl.rug.modellingsimulations.model.vehicle.routingstrategy.RandomImpatientRoutingStrategy;
 import nl.rug.modellingsimulations.model.vehicle.routingstrategy.RandomPatientRoutingStrategy;
@@ -67,15 +65,14 @@ public class Simulator {
             System.out.println("Iteration: " + currentIteration + " completed in: " + timer + " milliseconds.");
 
             // Sleeping before the view on purpose, so the view is always being updated after the same interval amount!
-            try {
-                timer = SimulatorConfig.getSleepBetweenStepMs() - timer; // Time to sleep
-                if(timer > 0)
-                    Thread.sleep(timer);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
-            if (shouldDisplay && graphMediator != null) {
+            if (shouldDisplay && graphMediator != null && currentIteration > SimulatorConfig.getIterationsBeforeDisplayGraph()) {
+                try {
+                    timer = SimulatorConfig.getSleepBetweenStepMs() - timer; // Time to sleep
+                    if(timer > 0)
+                        Thread.sleep(timer);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 graphMediator.updateView();
             }
             currentIteration += 1;
@@ -226,7 +223,18 @@ public class Simulator {
                     vehicle.setRoutingStrategy(createRandomRoutingStrategy(vehicle));
                     if(vehicle.getCurrentSpeed() > maxSpeed && maxSpeed != -1)
                         vehicle.setSpeed(maxSpeed);
-                } // Add other vehicle types here
+                } else if (vehicleChance.getKey().equals(NormalVehicle.class)) {
+                    vehicle = new NormalVehicle(vehicleSource);
+                    vehicle.setRoutingStrategy(createRandomRoutingStrategy(vehicle));
+                    if(vehicle.getCurrentSpeed() > maxSpeed && maxSpeed != -1)
+                        vehicle.setSpeed(maxSpeed);
+                } else if (vehicleChance.getKey().equals(FastVehicle.class)) {
+                    vehicle = new FastVehicle(vehicleSource);
+                    vehicle.setRoutingStrategy(createRandomRoutingStrategy(vehicle));
+                    if(vehicle.getCurrentSpeed() > maxSpeed && maxSpeed != -1)
+                        vehicle.setSpeed(maxSpeed);
+                }
+                // Add other vehicle types here
 
                 simulation.addNewVehicle(vehicle);
                 return;
