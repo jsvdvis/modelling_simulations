@@ -2,7 +2,7 @@ package nl.rug.modellingsimulations.config;
 
 public class JunctionSpacingConfig {
 
-    private static final double junctionLaneExitOffset = 0.3;
+    private static final double junctionLaneExitOffset = 0.35;
     private static final double sameSideNodeOffset = 0.15;
 
     private JunctionSpacingConfig(){}

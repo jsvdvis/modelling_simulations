@@ -4,10 +4,7 @@ import nl.rug.modellingsimulations.model.vehicle.AbstractVehicle;
 import nl.rug.modellingsimulations.model.vehicle.FastVehicle;
 import nl.rug.modellingsimulations.model.vehicle.NormalVehicle;
 import nl.rug.modellingsimulations.model.vehicle.SlowVehicle;
-import nl.rug.modellingsimulations.model.vehicle.routingstrategy.AStarPatientRoutingStrategy;
-import nl.rug.modellingsimulations.model.vehicle.routingstrategy.RandomImpatientRoutingStrategy;
-import nl.rug.modellingsimulations.model.vehicle.routingstrategy.RandomPatientRoutingStrategy;
-import nl.rug.modellingsimulations.model.vehicle.routingstrategy.RoutingStrategy;
+import nl.rug.modellingsimulations.model.vehicle.routingstrategy.*;
 
 import java.util.Map;
 
@@ -26,9 +23,10 @@ public class SimulatorConfig {
 
     // After adding here, make sure to update Simulator.class#createRandomRoutingStrategy
     private static final Map<Class<? extends RoutingStrategy>, Integer> ROUTING_CHANCE_TYPE_MAP = Map.of(
-            RandomImpatientRoutingStrategy.class, 20,
-            RandomPatientRoutingStrategy.class, 20,
-            AStarPatientRoutingStrategy.class, 60
+            RandomImpatientRoutingStrategy.class, 0,
+            RandomPatientRoutingStrategy.class, 0,
+            AStarSwitchingRoutingStrategy.class, 0,
+            AStarSwitchingWeightedRoutingStrategy.class, 100
     );
 
     private SimulatorConfig(){}

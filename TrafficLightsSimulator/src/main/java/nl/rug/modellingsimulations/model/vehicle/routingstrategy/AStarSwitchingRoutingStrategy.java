@@ -1,6 +1,9 @@
 package nl.rug.modellingsimulations.model.vehicle.routingstrategy;
 
+import nl.rug.modellingsimulations.config.VehicleRoutingStrategyConfig;
+import nl.rug.modellingsimulations.model.navigablenode.JunctionLaneNavigableNode;
 import nl.rug.modellingsimulations.model.navigablenode.NavigableNode;
+import nl.rug.modellingsimulations.model.navigablenode.RoadNavigableNode;
 import nl.rug.modellingsimulations.model.navigablenode.VehicleSinkNavigableNode;
 import nl.rug.modellingsimulations.model.vehicle.Vehicle;
 import nl.rug.modellingsimulations.utilities.AllNodesUtility;
@@ -9,7 +12,7 @@ import nl.rug.modellingsimulations.utilities.RandomGenerator;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class AStarPatientRoutingStrategy implements RoutingStrategy {
+public class AStarSwitchingRoutingStrategy implements RoutingStrategy {
 
     private final Vehicle vehicle;
     Map<NavigableNode, Double> scoreFromStart;
@@ -17,32 +20,64 @@ public class AStarPatientRoutingStrategy implements RoutingStrategy {
     Map<NavigableNode, NavigableNode> cameFrom;
     PriorityQueue<NavigableNode> openSet;
     Map<NavigableNode, NavigableNode> nodeToPick = new HashMap<>();
+    int impatienceTurnsWaiting = 0;
+    NavigableNode goal = null;
 
-
-    public AStarPatientRoutingStrategy(Vehicle vehicle) {
+    public AStarSwitchingRoutingStrategy(Vehicle vehicle) {
         this.vehicle = vehicle;
     }
 
     @Override
     public NavigableNode pickNextNode() {
-        if(nodeToPick.size() == 0) {
+        if(!nodeToPick.containsKey(vehicle.getCurrentNavigableNode())) {
             initializeAStar();
         }
 
-        if(!nodeToPick.containsKey(vehicle.getCurrentNavigableNode()))
-            throw new IllegalStateException("Cannot find next node to go to using AStar, since current node not known!");
+        NavigableNode currentNode = vehicle.getCurrentNavigableNode();
+        NavigableNode nextNode = nodeToPick.get(currentNode);
 
-        return nodeToPick.get(vehicle.getCurrentNavigableNode());
+        // If the next node is full, impatience starts to build up!
+        if(currentNode instanceof RoadNavigableNode &&
+                nextNode.getTrafficLoad() >= 0.999 &&
+                nextNode instanceof JunctionLaneNavigableNode
+        ) {
+            impatienceTurnsWaiting++;
+
+            // If the vehicle has been waiting for a long time and impatience is high enough,
+            // switch to a random different lane only if there is a non-full lane available
+            if(RandomGenerator.getInstance().getIntegerBetween(0, VehicleRoutingStrategyConfig.getTurnsFullImpatience()) <=
+                    VehicleRoutingStrategyConfig.getTurnsFullImpatience()) {
+                // the vehicle now got impatient and tries to switch lanes if possible
+                List<JunctionLaneNavigableNode> options = vehicle.getCurrentNavigableNode().getNextNodes().parallelStream()
+                        .map(lane -> (JunctionLaneNavigableNode) lane)
+                        .filter(lane -> lane.getTrafficLoad() < 0.999)
+                        .filter(lane -> !(lane.getJunctionExitNode().getNextNodeAfterRoad() instanceof VehicleSinkNavigableNode))
+                        .collect(Collectors.toList());
+
+                if(options.size() > 0) {
+                    nextNode = RandomGenerator.getInstance().getRandomOfList(options);
+                    impatienceTurnsWaiting = 0;
+                    nodeToPick.put(vehicle.getCurrentNavigableNode(), nextNode);
+                }
+            }
+        } else {
+            impatienceTurnsWaiting = 0;
+        }
+
+        return nextNode;
     }
 
     private void initializeAStar() {
-        NavigableNode goal = RandomGenerator.getInstance().getRandomOfList(AllNodesUtility.getInstance().getAllSinks());
         NavigableNode source = vehicle.getCurrentNavigableNode();
+        if(this.goal == null)
+            goal = RandomGenerator.getInstance().getRandomOfList(AllNodesUtility.getInstance().getAllSinks());
 
         openSet = new PriorityQueue<>(Comparator.comparingDouble(node -> estimatedScoreToGoal.get(node)));
         scoreFromStart = new HashMap<>();
         estimatedScoreToGoal = new HashMap<>();
         cameFrom = new HashMap<>();
+        nodeToPick.clear();
+        impatienceTurnsWaiting = 0;
 
         scoreFromStart.put(source, 0.0);
         estimatedScoreToGoal.put(source, scoreFromStart.get(source) + h(source, goal));
@@ -50,7 +85,7 @@ public class AStarPatientRoutingStrategy implements RoutingStrategy {
 
         while(openSet.size() > 0) {
             NavigableNode current = openSet.poll();
-            if(current == goal) {
+            if(current.equals(goal)) {
                 buildPath(current);
                 return;
             }

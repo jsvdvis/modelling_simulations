@@ -8,10 +8,7 @@ import nl.rug.modellingsimulations.model.trafficlight.TrafficLightJunction;
 import nl.rug.modellingsimulations.model.navigablenode.VehicleSinkNavigableNode;
 import nl.rug.modellingsimulations.model.navigablenode.VehicleSourceNavigableNode;
 import nl.rug.modellingsimulations.model.vehicle.*;
-import nl.rug.modellingsimulations.model.vehicle.routingstrategy.AStarPatientRoutingStrategy;
-import nl.rug.modellingsimulations.model.vehicle.routingstrategy.RandomImpatientRoutingStrategy;
-import nl.rug.modellingsimulations.model.vehicle.routingstrategy.RandomPatientRoutingStrategy;
-import nl.rug.modellingsimulations.model.vehicle.routingstrategy.RoutingStrategy;
+import nl.rug.modellingsimulations.model.vehicle.routingstrategy.*;
 import nl.rug.modellingsimulations.simulation.Simulation;
 import nl.rug.modellingsimulations.utilities.RandomGenerator;
 
@@ -258,8 +255,10 @@ public class Simulator {
                     routingStrategy = new RandomImpatientRoutingStrategy(vehicle);
                 }  else if(stratChance.getKey().equals(RandomPatientRoutingStrategy.class)) {
                     routingStrategy = new RandomPatientRoutingStrategy(vehicle);
-                } else if(stratChance.getKey().equals(AStarPatientRoutingStrategy.class)) {
-                    routingStrategy = new AStarPatientRoutingStrategy(vehicle);
+                } else if(stratChance.getKey().equals(AStarSwitchingRoutingStrategy.class)) {
+                    routingStrategy = new AStarSwitchingRoutingStrategy(vehicle);
+                } else if(stratChance.getKey().equals(AStarSwitchingWeightedRoutingStrategy.class)) {
+                    routingStrategy = new AStarSwitchingWeightedRoutingStrategy(vehicle);
                 }
                 // Add other vehicle strats here
 
