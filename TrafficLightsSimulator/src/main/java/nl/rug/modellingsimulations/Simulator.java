@@ -20,8 +20,8 @@ public class Simulator {
 
     Simulation simulation;
     int currentIteration = 0;
-    private StoppedVehicles stoppedVehicles;
-    private VehicleWaitingTime vehicleWaitingTime;
+    private AveragedStoppedVehicles stoppedVehicles;
+    private AveragedVehicleWaitingTime vehicleWaitingTime;
     private boolean shouldDisplay = true;
 
     public Simulator(Simulation simulation) {
@@ -37,14 +37,14 @@ public class Simulator {
 
         // Register metrics-measurers
         MetricsStepResultSaver throughputPrinter = new CsvFileSaver("throughput");
-        TrafficLightJunctionThroughput junctionThroughput = new TrafficLightJunctionThroughput(throughputPrinter);
+        AveragedTrafficLightJunctionThroughput junctionThroughput = new AveragedTrafficLightJunctionThroughput(throughputPrinter);
         simulation.getTrafficLightJunctions().forEach(junction -> junction.setThroughputMeasurer(junctionThroughput));
 
         MetricsStepResultSaver stoppedVehiclePrinter = new CsvFileSaver("stopped");
-        stoppedVehicles = new StoppedVehicles(stoppedVehiclePrinter);
+        stoppedVehicles = new AveragedStoppedVehicles(stoppedVehiclePrinter);
 
         MetricsStepResultSaver vehicleWaitingTimePrinter = new CsvFileSaver("waiting_time");
-        vehicleWaitingTime = new VehicleWaitingTime(vehicleWaitingTimePrinter);
+        vehicleWaitingTime = new AveragedVehicleWaitingTime(vehicleWaitingTimePrinter);
 
         long timer;
         while(true) {
@@ -64,7 +64,7 @@ public class Simulator {
             // Sleeping before the view on purpose, so the view is always being updated after the same interval amount!
             if (shouldDisplay && graphMediator != null && (
                     currentIteration > SimulatorConfig.getIterationsBeforeDisplayGraph()
-                    && currentIteration % 1000 == 0
+                    || currentIteration % 1000 == 0
             )) {
                 try {
                     timer = SimulatorConfig.getSleepBetweenStepMs() - timer; // Time to sleep
@@ -192,9 +192,9 @@ public class Simulator {
 
 
         // MEASUREMENT STEP
-        stoppedVehicles.setStoppedVehicleCount(
+        stoppedVehicles.addStoppedVehicleCount(
                 (int)simulation.getVehicles().stream().filter(vehicle ->
-                        vehicle.getCurrentSpeed() > 0
+                        vehicle.getCurrentSpeed() == 0
                 ).count()
         );
         simulation.getVehicles().forEach(vehicle ->

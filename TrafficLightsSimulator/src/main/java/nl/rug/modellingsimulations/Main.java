@@ -7,7 +7,7 @@ public class Main {
 
     public static void main(String[] args) {
         System.setProperty("org.graphstream.ui", "swing");
-        Simulation simulation = new CityGrid(20);
+        Simulation simulation = new CityGrid(14);
         Simulator simulator = new Simulator(simulation);
         simulator.run();
     }

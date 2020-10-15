@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class CsvFileSaver implements MetricsStepResultSaver {
-    private final int STEPS_PER_SAVE = 1000;
+    private final int STEPS_PER_SAVE = 10;
     private int stepCounter = 0;
     private boolean firstCharacterWritten = false;
     private BufferedWriter writer;

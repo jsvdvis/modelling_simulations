@@ -3,7 +3,7 @@ package nl.rug.modellingsimulations.metrics;
 import nl.rug.modellingsimulations.simulation.Simulation;
 
 public class StoppedVehicles extends SimulationMetricsMeasurer {
-    private int stoppedVehicleCount;
+    protected long stoppedVehicleCount;
 
     public StoppedVehicles(MetricsStepResultSaver saver) {
         super(saver);
@@ -23,7 +23,7 @@ public class StoppedVehicles extends SimulationMetricsMeasurer {
         int numberOfVehicles = simulation.getVehicles().size();
         this.addDataToSaver(String.valueOf(stoppedVehicleCount));
         this.addDataToSaver(String.valueOf(numberOfVehicles));
-        this.addDataToSaver(String.valueOf(((float)stoppedVehicleCount) / numberOfVehicles));
+        this.addDataToSaver(String.valueOf(((double)stoppedVehicleCount) / numberOfVehicles));
         super.finishSimulationStep(simulation);
     }
 

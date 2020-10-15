@@ -3,7 +3,7 @@ package nl.rug.modellingsimulations.metrics;
 import nl.rug.modellingsimulations.simulation.Simulation;
 
 public class TrafficLightJunctionThroughput extends SimulationMetricsMeasurer {
-    private int vehicleThroughput;
+    protected long vehicleThroughput;
 
     public TrafficLightJunctionThroughput(MetricsStepResultSaver saver) {
         super(saver);
@@ -23,7 +23,7 @@ public class TrafficLightJunctionThroughput extends SimulationMetricsMeasurer {
         int numberOfVehicles = simulation.getVehicles().size();
         this.addDataToSaver(String.valueOf(vehicleThroughput));
         this.addDataToSaver(String.valueOf(numberOfVehicles));
-        this.addDataToSaver(String.valueOf(((float)vehicleThroughput) / numberOfVehicles));
+        this.addDataToSaver(String.valueOf(((double)vehicleThroughput) / numberOfVehicles));
         super.finishSimulationStep(simulation);
     }
 

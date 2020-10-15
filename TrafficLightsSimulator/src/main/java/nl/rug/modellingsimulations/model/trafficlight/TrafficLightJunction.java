@@ -1,6 +1,7 @@
 package nl.rug.modellingsimulations.model.trafficlight;
 
 import nl.rug.modellingsimulations.config.JunctionSpacingConfig;
+import nl.rug.modellingsimulations.metrics.AveragedTrafficLightJunctionThroughput;
 import nl.rug.modellingsimulations.metrics.TrafficLightJunctionThroughput;
 import nl.rug.modellingsimulations.model.navigablenode.JunctionExitNavigableNode;
 import nl.rug.modellingsimulations.model.navigablenode.JunctionLaneNavigableNode;
@@ -24,7 +25,7 @@ public abstract class TrafficLightJunction {
     private Map<JunctionLaneNavigableNode, Set<JunctionLaneNavigableNode>> exemptedLanes = new HashMap<>();
     private TrafficLightStrategy trafficLightStrategy;
     private final Point position;
-    private TrafficLightJunctionThroughput throughputMeasurer;
+    private AveragedTrafficLightJunctionThroughput throughputMeasurer;
 
     public TrafficLightJunction(Point position) {
         this.lanes = new HashSet<>();
@@ -260,7 +261,7 @@ public abstract class TrafficLightJunction {
                 junctionLaneNavigableNode.getJunctionExitNode().getNextNodeAfterRoad().getTrafficLoad() <= 0.999);
     }
 
-    public void setThroughputMeasurer(TrafficLightJunctionThroughput throughputMeasurer) {
+    public void setThroughputMeasurer(AveragedTrafficLightJunctionThroughput throughputMeasurer) {
         this.throughputMeasurer = throughputMeasurer;
     }
 

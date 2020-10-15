@@ -3,7 +3,7 @@ package nl.rug.modellingsimulations.metrics;
 import nl.rug.modellingsimulations.simulation.Simulation;
 
 public class VehicleWaitingTime extends SimulationMetricsMeasurer {
-    private int vehicleWaitingTime;
+    protected long vehicleWaitingTime;
 
     public VehicleWaitingTime(MetricsStepResultSaver saver) {
         super(saver);
@@ -23,7 +23,7 @@ public class VehicleWaitingTime extends SimulationMetricsMeasurer {
         int numberOfVehicles = simulation.getVehicles().size();
         this.addDataToSaver(String.valueOf(vehicleWaitingTime));
         this.addDataToSaver(String.valueOf(numberOfVehicles));
-        this.addDataToSaver(String.valueOf(((float) vehicleWaitingTime) / numberOfVehicles));
+        this.addDataToSaver(String.valueOf(((double) vehicleWaitingTime) / numberOfVehicles));
         super.finishSimulationStep(simulation);
     }
 
