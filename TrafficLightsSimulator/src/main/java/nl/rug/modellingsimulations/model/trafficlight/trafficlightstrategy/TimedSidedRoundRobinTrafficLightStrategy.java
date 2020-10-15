@@ -24,7 +24,7 @@ public class TimedSidedRoundRobinTrafficLightStrategy implements TrafficLightStr
             this.trafficLightJunction.setAllTrafficLightsToRed();
 
             // Step 2: Get the next group of lanes on the same side
-            List<JunctionLaneNavigableNode> lanesOnSameSideList = lanePerSideQueue.pop();
+            List<JunctionLaneNavigableNode> lanesOnSameSideList = lanePerSideQueue.remove();
 
             // Step 3: Set the lights to green for all lanes on that same side
             lanesOnSameSideList.forEach(lane -> lane.setGreenLight(true));
