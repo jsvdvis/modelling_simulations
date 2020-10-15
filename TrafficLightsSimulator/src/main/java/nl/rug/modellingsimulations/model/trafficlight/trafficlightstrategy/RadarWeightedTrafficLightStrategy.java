@@ -46,11 +46,10 @@ public class RadarWeightedTrafficLightStrategy implements TrafficLightStrategy {
         // NOTE: we are sorting every single time, because we cannot use a comparator since the ordering changes every
         //  iteration.
         redLightsQueue = redLightsQueue.stream()
-                .sorted(Comparator.comparingDouble(
-                            VehicleBuffer::getTrafficLoad
-                        ).reversed().thenComparingInt(
-                            x-> RandomGenerator.getInstance().getIntegerBetween(0, 10)
-                        )
+                .sorted(
+                        Comparator.comparingDouble(VehicleBuffer::getTrafficLoad)
+                                .reversed()
+                                .thenComparingInt(x -> RandomGenerator.getInstance().getIntegerBetween(0, Integer.MAX_VALUE))
                 )
                 .collect(Collectors.toList());
 

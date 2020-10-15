@@ -31,7 +31,7 @@ public class SensoredSidedRoundRobinTrafficLightStrategy implements TrafficLight
             int i = 0;
             List<JunctionLaneNavigableNode> lanesOnSameSideList = null;
             while(i < lanePerSideQueue.size()) {
-                lanesOnSameSideList = lanePerSideQueue.pop();
+                lanesOnSameSideList = lanePerSideQueue.remove();
                 lanePerSideQueue.add(lanesOnSameSideList);
 
                 long vehiclesWaiting = lanesOnSameSideList.stream().filter(x -> x.getTrafficLoad() > 0.00001).count();

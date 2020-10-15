@@ -7,8 +7,8 @@ public class StoppedVehicles extends SimulationMetricsMeasurer {
 
     public StoppedVehicles(MetricsStepResultSaver saver) {
         super(saver);
-        this.addDataToSaver("Stopped vehicles");
-        this.addDataToSaver("Total Number of Vehicles");
+        this.addDataToSaver("Stopped vehicles (Left Axis)");
+        this.addDataToSaver("Total Number of Vehicles (Right Axis)");
         this.addDataToSaver("Relative stopped vehicles");
         super.finishSimulationStep(null);
     }
