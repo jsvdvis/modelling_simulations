@@ -194,7 +194,7 @@ public class Simulator {
         // MEASUREMENT STEP
         stoppedVehicles.setStoppedVehicleCount(
                 (int)simulation.getVehicles().stream().filter(vehicle ->
-                        vehicle.getCurrentSpeed() > 0
+                        vehicle.getCurrentSpeed() == 0
                 ).count()
         );
         simulation.getVehicles().forEach(vehicle ->

@@ -7,8 +7,8 @@ public class VehicleWaitingTime extends SimulationMetricsMeasurer {
 
     public VehicleWaitingTime(MetricsStepResultSaver saver) {
         super(saver);
-        this.addDataToSaver("Vehicle waiting time");
-        this.addDataToSaver("Total Number of Vehicles");
+        this.addDataToSaver("Vehicle waiting time (Left Axis)");
+        this.addDataToSaver("Total Number of Vehicles (Right Axis)");
         this.addDataToSaver("Relative waiting time vehicles");
         super.finishSimulationStep(null);
     }

@@ -7,8 +7,8 @@ public class TrafficLightJunctionThroughput extends SimulationMetricsMeasurer {
 
     public TrafficLightJunctionThroughput(MetricsStepResultSaver saver) {
         super(saver);
-        this.addDataToSaver("Absolute Throughput");
-        this.addDataToSaver("Total Number of Vehicles");
+        this.addDataToSaver("Absolute Throughput (Left Axis)");
+        this.addDataToSaver("Total Number of Vehicles (Right Axis)");
         this.addDataToSaver("Relative Throughput");
         super.finishSimulationStep(null);
     }
