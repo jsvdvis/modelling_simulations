@@ -10,6 +10,8 @@ import nl.rug.modellingsimulations.model.trafficlight.SimpleTrafficLightJunction
 import nl.rug.modellingsimulations.model.trafficlight.TrafficLightJunction;
 import nl.rug.modellingsimulations.model.trafficlight.trafficlightstrategy.RadarWeightedTrafficLightStrategy;
 import nl.rug.modellingsimulations.model.trafficlight.trafficlightstrategy.SensoredFifoTrafficLightStrategy;
+import nl.rug.modellingsimulations.model.trafficlight.trafficlightstrategy.SensoredSidedRoundRobinTrafficLightStrategy;
+import nl.rug.modellingsimulations.model.trafficlight.trafficlightstrategy.TimedSidedRoundRobinTrafficLightStrategy;
 import nl.rug.modellingsimulations.model.vehicle.Vehicle;
 import nl.rug.modellingsimulations.utilities.Point;
 
@@ -38,7 +40,7 @@ public class CityGrid implements Simulation {
 
             for (int j = 0; j < N; j += 1) {
                 TrafficLightJunction junction = new SimpleTrafficLightJunction(new Point(j * spacing, i * spacing));
-                junction.setTrafficLightStrategy(new RadarWeightedTrafficLightStrategy(junction));
+                junction.setTrafficLightStrategy(new SensoredSidedRoundRobinTrafficLightStrategy(junction));
 
                 junctionRow.add(junction);
                 if (j > 0) {

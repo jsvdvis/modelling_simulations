@@ -4,6 +4,7 @@ import nl.rug.modellingsimulations.config.TrafficLightConfig;
 import nl.rug.modellingsimulations.model.navigablenode.JunctionLaneNavigableNode;
 import nl.rug.modellingsimulations.model.navigablenode.VehicleBuffer;
 import nl.rug.modellingsimulations.model.trafficlight.TrafficLightJunction;
+import nl.rug.modellingsimulations.utilities.RandomGenerator;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -45,7 +46,12 @@ public class RadarWeightedTrafficLightStrategy implements TrafficLightStrategy {
         // NOTE: we are sorting every single time, because we cannot use a comparator since the ordering changes every
         //  iteration.
         redLightsQueue = redLightsQueue.stream()
-                .sorted(Comparator.comparingDouble(VehicleBuffer::getTrafficLoad).reversed())
+                .sorted(Comparator.comparingDouble(
+                            VehicleBuffer::getTrafficLoad
+                        ).reversed().thenComparingInt(
+                            x-> RandomGenerator.getInstance().getIntegerBetween(0, 10)
+                        )
+                )
                 .collect(Collectors.toList());
 
         // STEP 5: For all red traffic lights with waiting vehicles, turn green if allowed

@@ -62,8 +62,10 @@ public class Simulator {
             System.out.println("Iteration: " + currentIteration + " completed in: " + timer + " milliseconds.");
 
             // Sleeping before the view on purpose, so the view is always being updated after the same interval amount!
-            if (shouldDisplay && graphMediator != null &&
-                    (currentIteration > SimulatorConfig.getIterationsBeforeDisplayGraph() || currentIteration % 100 == 0)) {
+            if (shouldDisplay && graphMediator != null && (
+                    currentIteration > SimulatorConfig.getIterationsBeforeDisplayGraph()
+                    && currentIteration % 1000 == 0
+            )) {
                 try {
                     timer = SimulatorConfig.getSleepBetweenStepMs() - timer; // Time to sleep
                     if(timer > 0)
