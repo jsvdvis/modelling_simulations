@@ -29,6 +29,11 @@ public class AStarSwitchingRoutingStrategy implements RoutingStrategy {
 
     @Override
     public NavigableNode getNextNode() {
+        // If only 1 option, go for that one. There is no choice anyway.
+        if(this.vehicle.getCurrentNavigableNode().getNextNodes().size() == 1)
+            return this.vehicle.getCurrentNavigableNode().getNextNodes().get(0);
+
+        // If we need to choose, but the choice (path) has not been determined yet, compute a new path
         if(!nodeToPick.containsKey(vehicle.getCurrentNavigableNode())) {
             initializeAStar();
         }
