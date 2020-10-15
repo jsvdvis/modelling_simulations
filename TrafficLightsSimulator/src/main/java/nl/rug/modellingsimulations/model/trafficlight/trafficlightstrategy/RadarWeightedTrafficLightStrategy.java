@@ -31,7 +31,7 @@ public class RadarWeightedTrafficLightStrategy implements TrafficLightStrategy {
                     greenLanesTime.put(greenLaneTime.getKey(), 0);
                 });
 
-        // STEP 3: For all green lights with a timeout == 0, turn the light to red.
+        // STEP 3: For all green lights with a timeout == 0, add to the red queue.
         for (Map.Entry<JunctionLaneNavigableNode, Integer> greenLaneTime : new ArrayList<>(greenLanesTime.entrySet())) {
             if (greenLaneTime.getValue() == 0) {
                 greenLanesTime.remove(greenLaneTime.getKey());
@@ -45,7 +45,7 @@ public class RadarWeightedTrafficLightStrategy implements TrafficLightStrategy {
         // NOTE: we are sorting every single time, because we cannot use a comparator since the ordering changes every
         //  iteration.
         redLightsQueue = redLightsQueue.stream()
-                .sorted(Comparator.comparingDouble(VehicleBuffer::getTrafficLoad))
+                .sorted(Comparator.comparingDouble(VehicleBuffer::getTrafficLoad).reversed())
                 .collect(Collectors.toList());
 
         // STEP 5: For all red traffic lights with waiting vehicles, turn green if allowed

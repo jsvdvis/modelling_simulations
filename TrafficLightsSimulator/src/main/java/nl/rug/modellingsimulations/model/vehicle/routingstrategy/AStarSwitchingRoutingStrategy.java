@@ -55,7 +55,7 @@ public class AStarSwitchingRoutingStrategy implements RoutingStrategy {
                 List<JunctionLaneNavigableNode> options = vehicle.getCurrentNavigableNode().getNextNodes().parallelStream()
                         .map(lane -> (JunctionLaneNavigableNode) lane)
                         .filter(lane -> lane.getTrafficLoad() < 0.999)
-                        .filter(lane -> !(lane.getJunctionExitNode().getNextNodeAfterRoad() instanceof VehicleSinkNavigableNode))
+                        //.filter(lane -> !(lane.getJunctionExitNode().getNextNodeAfterRoad() instanceof VehicleSinkNavigableNode))
                         .collect(Collectors.toList());
 
                 if(options.size() > 0) {

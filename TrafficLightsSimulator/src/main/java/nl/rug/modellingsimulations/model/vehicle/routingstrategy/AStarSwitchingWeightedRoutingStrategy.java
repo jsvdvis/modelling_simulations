@@ -29,6 +29,11 @@ public class AStarSwitchingWeightedRoutingStrategy implements RoutingStrategy {
 
     @Override
     public NavigableNode getNextNode() {
+        // If only 1 option, go for that one. There is no choice anyway.
+        if(this.vehicle.getCurrentNavigableNode().getNextNodes().size() == 1)
+            return this.vehicle.getCurrentNavigableNode().getNextNodes().get(0);
+
+        // If we need to choose, but the choice (path) has not been determined yet, compute a new path
         if(!nodeToPick.containsKey(vehicle.getCurrentNavigableNode())) {
             initializeAStar();
         }
@@ -55,7 +60,7 @@ public class AStarSwitchingWeightedRoutingStrategy implements RoutingStrategy {
                 List<JunctionLaneNavigableNode> options = vehicle.getCurrentNavigableNode().getNextNodes().parallelStream()
                         .map(lane -> (JunctionLaneNavigableNode) lane)
                         .filter(lane -> lane.getTrafficLoad() < 0.999)
-                        .filter(lane -> !(lane.getJunctionExitNode().getNextNodeAfterRoad() instanceof VehicleSinkNavigableNode))
+                        //.filter(lane -> !(lane.getJunctionExitNode().getNextNodeAfterRoad() instanceof VehicleSinkNavigableNode))
                         .collect(Collectors.toList());
 
                 if(options.size() > 0) {
