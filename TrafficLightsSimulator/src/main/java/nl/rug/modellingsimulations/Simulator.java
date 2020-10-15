@@ -64,7 +64,7 @@ public class Simulator {
             // Sleeping before the view on purpose, so the view is always being updated after the same interval amount!
             if (shouldDisplay && graphMediator != null && (
                     currentIteration > SimulatorConfig.getIterationsBeforeDisplayGraph()
-                    && currentIteration % 1000 == 0
+                    || currentIteration % 1000 == 0
             )) {
                 try {
                     timer = SimulatorConfig.getSleepBetweenStepMs() - timer; // Time to sleep
