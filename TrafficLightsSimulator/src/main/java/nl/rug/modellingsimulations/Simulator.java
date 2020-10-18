@@ -111,8 +111,10 @@ public class Simulator {
 
         // STEP 3: Retrieve all vehicles
         List<Vehicle> vehicles = simulation.getVehicles();
-        System.out.println("Vehicles in Sim: " + simulation.getVehicles().size());
-        System.out.println("Vehicles in nodes: " + simulation.getNodes().stream().mapToLong(x -> x.getVehicles().size()).sum());
+        if(currentIteration > 10000) {
+            System.out.println("Vehicles in Sim: " + simulation.getVehicles().size());
+            System.out.println("Vehicles in nodes: " + simulation.getNodes().stream().mapToLong(x -> x.getVehicles().size()).sum());
+        }
 
         // STEP 4: Increase the impatience of our A* routing vehicles!
         vehicles.parallelStream()
