@@ -86,6 +86,11 @@ public class SimpleWorld implements Simulation {
     }
 
     @Override
+    public List<NavigableNode> getNodes() {
+        return nodes;
+    }
+
+    @Override
     public void addNewVehicle(Vehicle vehicle) {
         if(!vehicle.getCurrentNavigableNode().canMovePosition(vehicle))
             throw new IllegalStateException("Trying to add vehicle to source while it is full!");

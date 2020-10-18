@@ -40,7 +40,7 @@ public class CityGrid implements Simulation {
 
             for (int j = 0; j < N; j += 1) {
                 TrafficLightJunction junction = new SimpleTrafficLightJunction(new Point(j * spacing, i * spacing));
-                junction.setTrafficLightStrategy(new RadarWeightedTrafficLightStrategy(junction));
+                junction.setTrafficLightStrategy(new SensoredFifoTrafficLightStrategy(junction));
 
                 junctionRow.add(junction);
                 if (j > 0) {
@@ -109,6 +109,11 @@ public class CityGrid implements Simulation {
 
     public SimulationConfig getConfig() {
         return this.simulationConfig;
+    }
+
+    @Override
+    public List<NavigableNode> getNodes() {
+        return nodes;
     }
 
     @Override

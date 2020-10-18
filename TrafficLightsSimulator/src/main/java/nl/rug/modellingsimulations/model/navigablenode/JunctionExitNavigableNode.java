@@ -1,6 +1,7 @@
 package nl.rug.modellingsimulations.model.navigablenode;
 
 import nl.rug.modellingsimulations.model.trafficlight.TrafficLightJunction;
+import nl.rug.modellingsimulations.model.vehicle.Vehicle;
 import nl.rug.modellingsimulations.utilities.Point;
 
 import java.util.HashSet;
