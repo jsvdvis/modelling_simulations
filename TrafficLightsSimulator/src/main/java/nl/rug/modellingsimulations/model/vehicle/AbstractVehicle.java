@@ -52,14 +52,13 @@ public abstract class AbstractVehicle implements Vehicle {
         if(currentSpeed == 0)
             throw new IllegalStateException("Trying to move a vehicle that has no speed.");
         this.navigableNode.movePosition(this);
+        this.waitingTime = 0;
     }
 
     @Override
     public void tryAccelerate() {
         this.currentSpeed = Math.min(this.getMaximumSpeed(), this.getCurrentSpeed() + 1);
-        if (this.currentSpeed > 0) {
-            this.waitingTime = 0;
-        }
+        this.waitingTime = 0;
     }
 
     @Override

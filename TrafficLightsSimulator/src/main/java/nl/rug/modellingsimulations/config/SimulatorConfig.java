@@ -11,8 +11,8 @@ import java.util.Map;
 public class SimulatorConfig {
 
     private static final long SLEEP_BETWEEN_STEP_MS = 400;
-    private static final double PERCENT_CHANCE_VEHICLE_SPAWNS_AT_SOURCE = 100;
-    private static final long ITERATIONS_BEFORE_DISPLAY_GRAPH = 20000;
+    private static final double PERCENT_CHANCE_VEHICLE_SPAWNS_AT_SOURCE = 2;
+    private static final long ITERATIONS_BEFORE_DISPLAY_GRAPH = 10000;
 
     // After adding here, make sure to update Simulator.class#createRandomVehicle
     private static final Map<Class<? extends AbstractVehicle>, Integer> VEHICLE_CHANCE_TYPE_MAP = Map.of(
@@ -24,9 +24,9 @@ public class SimulatorConfig {
     // After adding here, make sure to update Simulator.class#createRandomRoutingStrategy
     private static final Map<Class<? extends RoutingStrategy>, Integer> ROUTING_CHANCE_TYPE_MAP = Map.of(
             RandomImpatientRoutingStrategy.class, 0,
-            RandomPatientRoutingStrategy.class, 100,
+            RandomPatientRoutingStrategy.class, 0,
             AStarSwitchingRoutingStrategy.class, 0,
-            AStarSwitchingWeightedRoutingStrategy.class, 0
+            AStarSwitchingWeightedRoutingStrategy.class, 100
     );
 
     private SimulatorConfig(){}

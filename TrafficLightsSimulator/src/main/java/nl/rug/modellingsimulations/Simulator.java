@@ -198,7 +198,7 @@ public class Simulator {
                 ).count()
         );
         simulation.getVehicles().forEach(vehicle ->
-                vehicleWaitingTime.addVehicleWaitingTime(vehicle.getWaitingTime())
+                vehicleWaitingTime.addVehicleWaitingTime(vehicle)
         );
 
         return simulation;

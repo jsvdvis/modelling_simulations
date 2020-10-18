@@ -1,5 +1,6 @@
 package nl.rug.modellingsimulations.metrics;
 
+import nl.rug.modellingsimulations.model.vehicle.Vehicle;
 import nl.rug.modellingsimulations.simulation.Simulation;
 
 public class AveragedVehicleWaitingTime extends SimulationMetricsMeasurer {
@@ -41,9 +42,11 @@ public class AveragedVehicleWaitingTime extends SimulationMetricsMeasurer {
         }
     }
 
-    public void addVehicleWaitingTime(int waitingTime) {
-        this.vehicleWaitingTime += waitingTime;
-        if(waitingTime > maxWaitingTimeForStep)
-            maxWaitingTimeForStep = waitingTime;
+    public void addVehicleWaitingTime(Vehicle vehicle) {
+        this.vehicleWaitingTime += vehicle.getWaitingTime();
+        if(vehicle.getWaitingTime() > maxWaitingTimeForStep) {
+            maxWaitingTimeForStep = vehicle.getWaitingTime();
+            System.out.println("New maximum is caused on location: X " + vehicle.getCurrentNavigableNode().getPosition(true).getX() + " Y " + vehicle.getCurrentNavigableNode().getPosition(true).getY());
+        }
     }
 }
