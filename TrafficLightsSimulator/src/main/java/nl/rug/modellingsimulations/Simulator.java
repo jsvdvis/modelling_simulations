@@ -1,5 +1,6 @@
 package nl.rug.modellingsimulations;
 
+import legacyexperiment.model.junction.Junction;
 import nl.rug.modellingsimulations.config.SimulatorConfig;
 import nl.rug.modellingsimulations.graph.GraphMediator;
 import nl.rug.modellingsimulations.graph.GraphStreamMediator;
@@ -7,6 +8,7 @@ import nl.rug.modellingsimulations.metrics.*;
 import nl.rug.modellingsimulations.model.trafficlight.TrafficLightJunction;
 import nl.rug.modellingsimulations.model.navigablenode.VehicleSinkNavigableNode;
 import nl.rug.modellingsimulations.model.navigablenode.VehicleSourceNavigableNode;
+import nl.rug.modellingsimulations.model.trafficlight.trafficlightstrategy.*;
 import nl.rug.modellingsimulations.model.vehicle.*;
 import nl.rug.modellingsimulations.model.vehicle.routingstrategy.*;
 import nl.rug.modellingsimulations.simulation.Simulation;
@@ -289,5 +291,34 @@ public class Simulator {
 
     public void hideDisplay() {
         this.shouldDisplay = false;
+    }
+
+    public static TrafficLightStrategy createRandomTrafficLightStrategy(TrafficLightJunction junction) {
+        Map<Class<? extends TrafficLightStrategy>, Integer> trafficLightStrategyChanceMap = SimulatorConfig.getTrafficLightStratChanceTypeMap();
+        int chanceDraw = RandomGenerator.getInstance().getIntegerBetween(0, 100);
+
+        int sumOfChances = 0;
+        for(Map.Entry<Class<? extends TrafficLightStrategy>, Integer> stratChance : trafficLightStrategyChanceMap.entrySet()) {
+            sumOfChances += stratChance.getValue();
+
+            if(chanceDraw <= sumOfChances) {
+
+                // Create new vehicle of this type!
+                TrafficLightStrategy trafficLightStrategy = null;
+                if(stratChance.getKey().equals(TimedSidedRoundRobinTrafficLightStrategy.class)) {
+                    trafficLightStrategy = new TimedSidedRoundRobinTrafficLightStrategy(junction);
+                }  else if(stratChance.getKey().equals(SensoredSidedRoundRobinTrafficLightStrategy.class)) {
+                    trafficLightStrategy = new SensoredSidedRoundRobinTrafficLightStrategy(junction);
+                } else if(stratChance.getKey().equals(SensoredFifoTrafficLightStrategy.class)) {
+                    trafficLightStrategy = new SensoredFifoTrafficLightStrategy(junction);
+                } else if(stratChance.getKey().equals(RadarWeightedTrafficLightStrategy.class)) {
+                    trafficLightStrategy = new RadarWeightedTrafficLightStrategy(junction);
+                }
+                // Add other vehicle strats here
+
+                return trafficLightStrategy;
+            }
+        }
+        return null;
     }
 }
