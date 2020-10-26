@@ -91,18 +91,14 @@ public class Simulator {
      * 6. Create vehicles at the sources if chance allows
      * 7. As long as vehicles can still make moves, do the following
      * 7a. Put Vehicles with 0 moves left on a list to accelerate, if their next movement is not hindered
-     * 7b. Increment waiting time of Vehicles with 0 moves left and currentSpeed 0 that cannot accelerate.
-     * 7c. All vehicles that have moves remaining but CANNOT make that move, have to break!
-     * 7d. Get a list of movable vehicles
-     * 7e. Move the vehicle, and reduce the maximum amount of movements remaining
-     * 7f. For each vehicle sink, remove the vehicle, if any
-     * 7g. Replenish the vehicle sources, if required
+     * 7b. All vehicles that have moves remaining but CANNOT make that move, have to break!
+     * 7c. Get a list of movable vehicles
+     * 7d. Move the vehicle, and reduce the maximum amount of movements remaining
+     * 7e. For each vehicle sink, remove the vehicle, if any
+     * 7f. Replenish the vehicle sources, if required
      * 8. Accelerate all vehicles that did not brake during this step and can still make a move
      */
     private Simulation step() {
-        // TODO: deep copy of the simulation, so state transitions from one to the other
-        // simulation = simulation;
-
         // STEP 1: Retrieve traffic lights.
         List<TrafficLightJunction> trafficLightJunctions = simulation.getTrafficLightJunctions();
 
