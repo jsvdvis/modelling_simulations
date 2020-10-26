@@ -7,7 +7,10 @@ import nl.rug.modellingsimulations.model.navigablenode.VehicleSinkNavigableNode;
 import nl.rug.modellingsimulations.model.vehicle.Vehicle;
 import nl.rug.modellingsimulations.utilities.RandomGenerator;
 
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public abstract class VehicleBuffer implements NavigableNode {
@@ -66,9 +69,6 @@ public abstract class VehicleBuffer implements NavigableNode {
      */
     public void movePosition(Vehicle vehicle) {
 
-        if(!vehicle.canMakeMove())
-            throw new IllegalStateException("Tried to make move, while not being allowed!");
-
         // STEP 1: Compute the next vehicle slot to move to
         int nextVehicleSlot;
         if(vehicleSlots.inverse().get(vehicle) == null)
@@ -95,6 +95,7 @@ public abstract class VehicleBuffer implements NavigableNode {
         if(nextVehicleSlot == -1) {
             // Moving out of the buffer, onto the next adventure!
             vehicle.getNextNavigableNode().movePosition(vehicle);
+
         } else {
             // We are making an internal move. Either a new vehicle in the buffer, or shifting a spot.
             // Moving to slot 0-size within the buffer. Updating buffer state.
@@ -106,10 +107,18 @@ public abstract class VehicleBuffer implements NavigableNode {
     }
 
     @Override
+    // https://stackoverflow.com/a/22186845/3287095 rounding doubles
     public double getTrafficLoad() {
-        return vehicleSlots.values().stream()
+        double load = vehicleSlots.values().stream()
                 .filter(Objects::nonNull)
                 .count() / (double) this.size;
+        int scale = (int) Math.pow(10, 1);
+        return (double) Math.round(load * scale) / scale;
+    }
+
+    @Override
+    public List<Vehicle> getVehicles() {
+        return new ArrayList<>(this.vehicleSlots.values());
     }
 
 }

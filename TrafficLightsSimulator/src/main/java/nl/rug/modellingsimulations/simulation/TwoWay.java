@@ -1,5 +1,6 @@
 package nl.rug.modellingsimulations.simulation;
 
+import nl.rug.modellingsimulations.Simulator;
 import nl.rug.modellingsimulations.config.CityGridConfig;
 import nl.rug.modellingsimulations.config.DefaultSimulationConfig;
 import nl.rug.modellingsimulations.config.SimulationConfig;
@@ -37,7 +38,7 @@ public class TwoWay implements Simulation {
             TrafficLightJunction junction = new SimpleTrafficLightJunction(
                     new Point(i * spacing, 0)
             );
-            junction.setTrafficLightStrategy(new SensoredFifoTrafficLightStrategy(junction));
+            junction.setTrafficLightStrategy(Simulator.createRandomTrafficLightStrategy(junction));
             junctions.add(junction);
 
             if (i > 0) {
@@ -89,6 +90,11 @@ public class TwoWay implements Simulation {
 
     public SimulationConfig getConfig() {
         return this.simulationConfig;
+    }
+
+    @Override
+    public List<NavigableNode> getNodes() {
+        return nodes;
     }
 
     @Override

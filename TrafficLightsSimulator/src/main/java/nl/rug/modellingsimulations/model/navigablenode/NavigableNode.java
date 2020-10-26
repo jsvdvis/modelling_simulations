@@ -21,6 +21,7 @@ public interface NavigableNode {
 
     boolean canMovePosition(Vehicle vehicle);
     void movePosition(Vehicle vehicle);
+    List<Vehicle> getVehicles();
 
     Point getPosition(boolean precise);
 

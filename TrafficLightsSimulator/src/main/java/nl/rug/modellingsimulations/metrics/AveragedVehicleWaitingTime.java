@@ -46,7 +46,6 @@ public class AveragedVehicleWaitingTime extends SimulationMetricsMeasurer {
         this.vehicleWaitingTime += vehicle.getWaitingTime();
         if(vehicle.getWaitingTime() > maxWaitingTimeForStep) {
             maxWaitingTimeForStep = vehicle.getWaitingTime();
-            System.out.println("New maximum is caused on location: X " + vehicle.getCurrentNavigableNode().getPosition(true).getX() + " Y " + vehicle.getCurrentNavigableNode().getPosition(true).getY());
         }
     }
 }

@@ -1,5 +1,6 @@
 package nl.rug.modellingsimulations.simulation;
 
+import nl.rug.modellingsimulations.Simulator;
 import nl.rug.modellingsimulations.config.DefaultSimulationConfig;
 import nl.rug.modellingsimulations.config.SimulationConfig;
 import nl.rug.modellingsimulations.model.trafficlight.SimpleTrafficLightJunction;
@@ -31,13 +32,13 @@ public class SimpleWorld implements Simulation {
         VehicleSinkNavigableNode vehicleSinkNavigableNode2 = new VehicleSinkNavigableNode(new Point(4,5));
 
         TrafficLightJunction junction1 = new SimpleTrafficLightJunction(new Point(0, 0));
-        junction1.setTrafficLightStrategy(new TimedSidedRoundRobinTrafficLightStrategy(junction1));
+        junction1.setTrafficLightStrategy(Simulator.createRandomTrafficLightStrategy(junction1));
         TrafficLightJunction junction2 = new SimpleTrafficLightJunction(new Point(0, 4));
-        junction2.setTrafficLightStrategy(new TimedSidedRoundRobinTrafficLightStrategy(junction2));
+        junction2.setTrafficLightStrategy(Simulator.createRandomTrafficLightStrategy(junction2));
         TrafficLightJunction junction3 = new SimpleTrafficLightJunction(new Point(4, 4));
-        junction3.setTrafficLightStrategy(new TimedSidedRoundRobinTrafficLightStrategy(junction3));
+        junction3.setTrafficLightStrategy(Simulator.createRandomTrafficLightStrategy(junction3));
         TrafficLightJunction junction4 = new SimpleTrafficLightJunction(new Point(4, 0));
-        junction4.setTrafficLightStrategy(new TimedSidedRoundRobinTrafficLightStrategy(junction4));
+        junction4.setTrafficLightStrategy(Simulator.createRandomTrafficLightStrategy(junction4));
 
 //        builder.connectTwoWayJunction(junction1, junction2);
 //        builder.connect(junction2, junction3);
@@ -83,6 +84,11 @@ public class SimpleWorld implements Simulation {
 
     public SimulationConfig getConfig() {
         return this.simulationConfig;
+    }
+
+    @Override
+    public List<NavigableNode> getNodes() {
+        return nodes;
     }
 
     @Override

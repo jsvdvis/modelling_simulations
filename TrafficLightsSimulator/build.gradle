@@ -1,9 +1,11 @@
 plugins {
     id 'java'
+    id 'application'
 }
 
 group 'nl.rug.modellingsimulations'
 version '1.0-SNAPSHOT'
+mainClassName = "nl.rug.modellingsimulations.Main"
 
 repositories {
     mavenCentral()
