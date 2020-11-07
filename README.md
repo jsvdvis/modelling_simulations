@@ -1,5 +1,5 @@
 # Traffic Light Simulator
-INSERT ABSTRACT
+Maintaining  a  continuous  traffic  flow  in  city  gridshas proven to be a challenging task. Gridlocks in a traffic networkshould  be  prevented.  The  aim  of  this  paper  is  to  analyze  fourdifferent  algorithms  for  both  traffic  lights  and  four  for  vehiclebehaviour, to study the strategies that do not work well, as well asstrategies that are beneficial to the road network. To tackle thisproblem,  a  microscopic  model  is  created  that  models  individualtraffic lights, roads and road users. Discrete time steps are usedto  transition  the  model  in  our  simulation.  We  find  that  vehiclebehaviour can have a negative effect on the traffic flow, especiallywhen  vehicles  are  waiting  for  a  long  time  without  taking  adifferent  route.  However,  the  strategies  of  traffic  lights  has  amuch  greater  impact  on  the  traffic  flow.  We  find  that  a  trafficlight that sets individual lights to green, as opposed to a per-sidebasis, using a First-In, First-Out queue works best within a citygrid.
 
 ## Requirements
 - The project was created by using Java 15. Therefore, we recommend Java 15 at the very least.
